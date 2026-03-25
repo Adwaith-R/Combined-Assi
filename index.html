@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grow a Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky1: #87CEEB;
+  --sky2: #c9e8f5;
+  --sun: #FFD700;
+  --grass-dark: #2d6a1e;
+  --grass-mid: #4a9e2f;
+  --grass-light: #6abf42;
+  --earth: #7a4f2e;
+  --earth-dark: #5a3520;
+  --soil-top: #a0652a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  overflow: hidden;
+  width: 100vw; height: 100vh;
+  font-family: 'Nunito', sans-serif;
+}
+
+#sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    #3b8fc4 0%,
+    #62b8e8 25%,
+    #a8d8f0 50%,
+    #c8e8a0 75%,
+    #b0d860 100%
+  );
+  z-index: 0;
+}
+
+#sun {
+  position: absolute;
+  top: 8%; left: 13%;
+  width: 76px; height: 76px;
+  background: radial-gradient(circle, #fffde0 0%, #ffe040 35%, rgba(255,200,0,0) 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 50px 25px rgba(255,220,50,0.4), 0 0 110px 60px rgba(255,180,0,0.18);
+  animation: sunPulse 4s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes sunPulse {
+  0%,100%{ box-shadow: 0 0 50px 25px rgba(255,220,50,0.4), 0 0 110px 60px rgba(255,180,0,0.18); }
+  50%    { box-shadow: 0 0 70px 35px rgba(255,220,50,0.5), 0 0 150px 80px rgba(255,180,0,0.24); }
+}
+
+#sun-rays {
+  position: absolute;
+  top: 8%; left: 13%;
+  width: 76px; height: 76px;
+  z-index: 2;
+  animation: raysRotate 22s linear infinite;
+  transform-origin: 38px 38px;
+  pointer-events: none;
+}
+@keyframes raysRotate { to { transform: rotate(360deg); } }
+
+.cloud {
+  position: absolute;
+  border-radius: 60px;
+  background: rgba(255,255,255,0.9);
+  animation: cloudDrift var(--cdur,30s) linear infinite;
+  animation-delay: var(--cdelay,0s);
+  z-index: 3;
+}
+@keyframes cloudDrift {
+  from { transform: translateX(-250px); }
+  to   { transform: translateX(115vw); }
+}
+
+#landscape {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 55%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.grass-wrap {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  z-index: 8;
+  pointer-events: none;
+}
+.blade {
+  position: absolute;
+  bottom: 0;
+  width: var(--bw,5px);
+  height: var(--bh,38px);
+  border-radius: 50% 50% 0 0 / 80% 80% 0 0;
+  transform-origin: bottom center;
+  transform: rotate(var(--brot,0deg));
+  animation: sway var(--bspeed,2.4s) ease-in-out infinite alternate;
+  animation-delay: var(--bdelay,0s);
+}
+@keyframes sway {
+  from { transform: rotate(var(--brot,0deg)) skewX(-3deg); }
+  to   { transform: rotate(calc(var(--brot,0deg) + 9deg)) skewX(3deg); }
+}
+
+.flower {
+  position: absolute;
+  bottom: var(--fbot,30px);
+  left: var(--fleft,50%);
+  z-index: 9;
+  pointer-events: none;
+  transform-origin: bottom center;
+  animation: flowerSway var(--fspeed,3s) ease-in-out infinite alternate;
+  animation-delay: var(--fdelay,0s);
+}
+@keyframes flowerSway {
+  from { transform: rotate(-5deg); }
+  to   { transform: rotate(5deg); }
+}
+.flower-stem { width:2px; height:var(--fstem,28px); background:#4a8c28; margin:0 auto; border-radius:2px; }
+.flower-head {
+  width:10px; height:10px; border-radius:50%;
+  background:var(--fcolor,#ff6b6b);
+  margin:0 auto;
+  box-shadow: 0 0 5px rgba(0,0,0,0.12);
+  position:relative;
+}
+.flower-head::before {
+  content:''; position:absolute; inset:-4px; border-radius:50%;
+  background:var(--fpetal,rgba(255,200,100,0.45)); z-index:-1;
+}
+
+.bird {
+  position: absolute;
+  z-index: 5;
+  animation: birdFly var(--bdur,12s) linear infinite;
+  animation-delay: var(--birddelay,0s);
+  top: var(--btop,15%);
+}
+@keyframes birdFly {
+  0%   { left:-60px; opacity:0; }
+  5%   { opacity:1; }
+  95%  { opacity:1; }
+  100% { left:110vw; opacity:0; }
+}
+.bird svg { animation: wingFlap 0.45s ease-in-out infinite alternate; }
+@keyframes wingFlap {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0.55); }
+}
+
+.butterfly {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  animation: buffloat var(--bufdur,8s) ease-in-out infinite;
+  animation-delay: var(--bufdelay,0s);
+}
+@keyframes buffloat {
+  0%  { transform: translate(0,0) rotate(-6deg); }
+  25% { transform: translate(25px,-22px) rotate(6deg); }
+  50% { transform: translate(50px,4px) rotate(-4deg); }
+  75% { transform: translate(25px,18px) rotate(6deg); }
+  100%{ transform: translate(0,0) rotate(-6deg); }
+}
+
+/* Light rays */
+#light-rays {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 1; overflow: hidden;
+}
+.ray {
+  position: absolute; top:-10%; left: var(--rleft,50%);
+  width: 4px; height: 130%;
+  background: linear-gradient(to bottom, rgba(255,240,100,0.22), transparent);
+  transform: rotate(var(--rrot,10deg));
+  transform-origin: top center;
+  animation: rayShimmer var(--rspeed,4s) ease-in-out infinite alternate;
+  animation-delay: var(--rdelay,0s);
+}
+@keyframes rayShimmer {
+  from { opacity:0.3; width:4px; }
+  to   { opacity:1;   width:10px; }
+}
+
+/* Tree scene */
+#tree-scene {
+  position: absolute;
+  /* Landscape SVG is 55% tall, soil surface is at y=400/500 = 80% down that SVG.
+     So soil = 55% * 0.2 = 11% from bottom. Tree SVG viewBox base is at H-8=392/400 = 98%.
+     We position bottom at soil level so the trunk base meets the ground. */
+  bottom: 11%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  width: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+#tree-svg {
+  width: 380px; height: 400px;
+  overflow: visible;
+  display: block;
+  /* Push SVG down so its bottom edge (where trunk base is) aligns with container bottom */
+  margin-bottom: -8px;
+}
+
+/* UI */
+#stage-label {
+  position: fixed; top:16px; left:50%; transform:translateX(-50%);
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: 0.95rem; color: #2a4a10;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  padding: 8px 24px; border-radius: 40px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.1);
+  z-index: 50; white-space: nowrap;
+  transition: all 0.5s ease;
+}
+#click-counter {
+  position: fixed; top:58px; left:50%; transform:translateX(-50%);
+  font-size: 0.72rem; color:rgba(40,70,10,0.5);
+  letter-spacing:0.18em; text-transform:uppercase; z-index:50;
+}
+.grow-btn {
+  position: fixed; bottom:42px; left:50%; transform:translateX(-50%);
+  z-index:50;
+  background: linear-gradient(145deg,#5cb82e,#3a8018);
+  border: none; color:#f0ffe0;
+  font-family:'Dela Gothic One',sans-serif;
+  font-size:1rem; letter-spacing:0.07em;
+  padding:16px 46px; cursor:pointer; border-radius:50px;
+  box-shadow: 0 6px 22px rgba(50,120,16,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.25s ease;
+}
+.grow-btn:hover {
+  background: linear-gradient(145deg,#6ecf38,#499e20);
+  box-shadow: 0 10px 30px rgba(50,120,16,0.55);
+  transform: translateX(-50%) translateY(-3px);
+}
+.grow-btn:active { transform: translateX(-50%) scale(0.96); }
+.grow-btn.done {
+  background: linear-gradient(145deg,#b5d98a,#8cbf5a);
+  color:rgba(40,70,10,0.45); pointer-events:none;
+}
+
+.reseed-btn {
+  position: fixed; bottom:42px; left:50%;
+  transform: translateX(-50%) translateY(8px);
+  z-index:50;
+  background: linear-gradient(145deg,#e0853a,#b05e1e);
+  border:none; color:#fff8ee;
+  font-family:'Dela Gothic One',sans-serif;
+  font-size:0.85rem; letter-spacing:0.07em;
+  padding:13px 34px; cursor:pointer; border-radius:50px;
+  box-shadow: 0 6px 18px rgba(170,80,20,0.4);
+  opacity:0; pointer-events:none;
+  transition: all 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+.reseed-btn.show {
+  opacity:1; pointer-events:all;
+  transform: translateX(-50%) translateY(0);
+  bottom: 110px;
+}
+.reseed-btn:hover {
+  background: linear-gradient(145deg,#f0943f,#c06c22);
+  transform: translateX(-50%) translateY(-2px);
+  bottom: 110px;
+}
+
+.particle {
+  position: fixed; pointer-events:none;
+  border-radius: 50% 0 50% 0;
+  animation: poof var(--pdur,1s) ease-out forwards;
+  z-index: 60;
+}
+@keyframes poof {
+  0%  { opacity:1; transform:translate(0,0) rotate(0deg) scale(1); }
+  100%{ opacity:0; transform:translate(var(--ptx),var(--pty)) rotate(var(--ptr)) scale(0.15); }
+}
+
+#completion-msg {
+  position: fixed; top:-70px; left:50%; transform:translateX(-50%);
+  font-family:'Dela Gothic One',sans-serif; font-size:1.05rem; color:#fff;
+  background: linear-gradient(135deg,#5cb82e,#3a8018);
+  padding:12px 28px; border-radius:50px;
+  box-shadow: 0 8px 22px rgba(50,120,16,0.45);
+  z-index:55; white-space:nowrap;
+  transition: top 0.7s cubic-bezier(0.34,1.56,0.64,1);
+}
+#completion-msg.show { top:96px; }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="sun"></div>
+<svg id="sun-rays" viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="rgba(255,220,50,0.55)" stroke-width="2.5" stroke-linecap="round">
+    <line x1="38" y1="2"  x2="38" y2="14"/>
+    <line x1="38" y1="62" x2="38" y2="74"/>
+    <line x1="2"  y1="38" x2="14" y2="38"/>
+    <line x1="62" y1="38" x2="74" y2="38"/>
+    <line x1="12" y1="12" x2="20" y2="20"/>
+    <line x1="56" y1="56" x2="64" y2="64"/>
+    <line x1="64" y1="12" x2="56" y2="20"/>
+    <line x1="20" y1="56" x2="12" y2="64"/>
+  </g>
+</svg>
+
+<div id="light-rays"></div>
+<div id="clouds"></div>
+<div id="birds"></div>
+<div id="butterflies"></div>
+
+<svg id="landscape" viewBox="0 0 1440 500" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+  <!-- Distant hazy hills -->
+  <ellipse cx="250"  cy="480" rx="360" ry="130" fill="#9ecf58" opacity="0.45"/>
+  <ellipse cx="900"  cy="490" rx="430" ry="145" fill="#8fc048" opacity="0.4"/>
+  <ellipse cx="1400" cy="478" rx="300" ry="120" fill="#9ecf58" opacity="0.45"/>
+  <!-- Mid hills -->
+  <ellipse cx="80"   cy="500" rx="280" ry="125" fill="#66aa30"/>
+  <ellipse cx="500"  cy="505" rx="360" ry="135" fill="#58981e"/>
+  <ellipse cx="1000" cy="502" rx="400" ry="130" fill="#60a428"/>
+  <ellipse cx="1420" cy="506" rx="300" ry="128" fill="#58981e"/>
+  <!-- Ground -->
+  <rect x="0" y="415" width="1440" height="85" fill="#5a3520"/>
+  <rect x="0" y="400" width="1440" height="22" fill="#7a4f2e"/>
+  <ellipse cx="720" cy="400" rx="950" ry="28" fill="#a0652a"/>
+  <!-- Soil surface detail -->
+  <ellipse cx="360" cy="406" rx="200" ry="10" fill="rgba(80,40,10,0.25)"/>
+  <ellipse cx="1080" cy="408" rx="180" ry="9"  fill="rgba(80,40,10,0.2)"/>
+</svg>
+
+<div class="grass-wrap" id="grass-wrap"></div>
+<div id="flowers"></div>
+
+<div id="tree-scene">
+  <svg id="tree-svg" viewBox="0 0 380 400" xmlns="http://www.w3.org/2000/svg" style="opacity:0"></svg>
+</div>
+
+<div id="stage-label">🌰 Click to plant your first seed</div>
+<div id="click-counter"></div>
+<button class="grow-btn" id="growBtn" onclick="growTree()">🌿 Plant &amp; Grow</button>
+<button class="reseed-btn" id="reseedBtn" onclick="reseed()">🌰 Plant a New Seed</button>
+<div id="completion-msg">🌳 Your tree is fully grown!</div>
+
+<script>
+// ---- ENVIRONMENT ----
+
+// Light rays
+const lrEl = document.getElementById('light-rays');
+for (let i = 0; i < 12; i++) {
+  const r = document.createElement('div');
+  r.className = 'ray';
+  r.style.cssText = `--rleft:${3+i*8}%; --rrot:${-18+i*4}deg; --rspeed:${3+Math.random()*4}s; --rdelay:${Math.random()*4}s;`;
+  lrEl.appendChild(r);
+}
+
+// Clouds
+[
+  { top:'7%',  left:'-8%',  w:200, h:58, dur:40, delay:0 },
+  { top:'12%', left:'18%',  w:260, h:68, dur:52, delay:-16 },
+  { top:'5%',  left:'52%',  w:170, h:50, dur:44, delay:-9 },
+  { top:'16%', left:'72%',  w:210, h:62, dur:48, delay:-24 },
+  { top:'9%',  left:'88%',  w:140, h:44, dur:36, delay:-6 },
+].forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'cloud';
+  el.style.cssText = `top:${c.top};left:${c.left};width:${c.w}px;height:${c.h}px;--cdur:${c.dur}s;--cdelay:${c.delay}s;`;
+  el.innerHTML = `
+    <div style="position:absolute;width:${c.w*0.48}px;height:${c.h*1.25}px;background:rgba(255,255,255,0.88);border-radius:50%;top:-${c.h*0.28}px;left:${c.w*0.22}px"></div>
+    <div style="position:absolute;width:${c.w*0.32}px;height:${c.h*1.05}px;background:rgba(255,255,255,0.82);border-radius:50%;top:-${c.h*0.1}px;left:${c.w*0.58}px"></div>`;
+  document.getElementById('clouds').appendChild(el);
+});
+
+// Birds
+for (let i = 0; i < 6; i++) {
+  const b = document.createElement('div');
+  b.className = 'bird';
+  const sc = 0.55 + Math.random()*0.75;
+  b.style.cssText = `--bdur:${11+Math.random()*13}s;--birddelay:${-Math.random()*13}s;--btop:${7+Math.random()*18}%;`;
+  b.innerHTML = `<svg width="${22*sc}" height="${11*sc}" viewBox="0 0 22 11" fill="none">
+    <path d="M0 6 Q5.5 0 11 6 Q16.5 0 22 6" stroke="#444" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </svg>`;
+  document.getElementById('birds').appendChild(b);
+}
+
+// Butterflies
+['#ff9ecd','#ffe566','#a8edea','#ffb347','#c3f0ca','#d4a0ff'].forEach((c,i) => {
+  const bf = document.createElement('div');
+  bf.className = 'butterfly';
+  bf.style.cssText = `left:${8+Math.random()*78}%;bottom:${18+Math.random()*42}%;--bufdur:${5+Math.random()*6}s;--bufdelay:${Math.random()*5}s;`;
+  bf.innerHTML = `<svg width="18" height="14" viewBox="0 0 18 14">
+    <ellipse cx="4"  cy="5"  rx="4" ry="3" fill="${c}" opacity="0.9"/>
+    <ellipse cx="14" cy="5"  rx="4" ry="3" fill="${c}" opacity="0.9"/>
+    <ellipse cx="5"  cy="10" rx="3" ry="2" fill="${c}" opacity="0.75"/>
+    <ellipse cx="13" cy="10" rx="3" ry="2" fill="${c}" opacity="0.75"/>
+    <line x1="9" y1="2" x2="9" y2="13" stroke="#555" stroke-width="0.9" stroke-linecap="round"/>
+    <line x1="7" y1="2" x2="9" y2="4" stroke="#555" stroke-width="0.7"/>
+    <line x1="11" y1="2" x2="9" y2="4" stroke="#555" stroke-width="0.7"/>
+  </svg>`;
+  document.getElementById('butterflies').appendChild(bf);
+});
+
+// Grass
+const grassWrap = document.getElementById('grass-wrap');
+const grassCols = ['#2e7a18','#3e9e22','#26601a','#50c030','#5acf38','#48b228','#34881e'];
+for (let i = 0; i < 130; i++) {
+  const bl = document.createElement('div');
+  bl.className = 'blade';
+  const h = 18 + Math.random()*52;
+  const w = 3 + Math.random()*5;
+  const rot = -16 + Math.random()*32;
+  const col = grassCols[Math.floor(Math.random()*grassCols.length)];
+  const col2 = grassCols[Math.floor(Math.random()*grassCols.length)];
+  bl.style.cssText = `left:${Math.random()*100}%;--bh:${h}px;--bw:${w}px;--brot:${rot}deg;
+    --bspeed:${1.5+Math.random()*2.5}s;--bdelay:${Math.random()*3}s;
+    background:linear-gradient(to top,${col},${col2});`;
+  grassWrap.appendChild(bl);
+}
+
+// Wildflowers
+const flowEl = document.getElementById('flowers');
+const flDefs = [
+  {color:'#ff5252',petal:'rgba(255,100,100,0.38)',stem:32},
+  {color:'#FFD700',petal:'rgba(255,215,60,0.38)',stem:26},
+  {color:'#e040fb',petal:'rgba(210,80,255,0.38)',stem:36},
+  {color:'#ff9800',petal:'rgba(255,170,50,0.38)',stem:24},
+  {color:'#fff9c4',petal:'rgba(255,240,110,0.38)',stem:30},
+  {color:'#f48fb1',petal:'rgba(255,150,180,0.38)',stem:28},
+  {color:'#80cbc4',petal:'rgba(100,220,200,0.38)',stem:34},
+  {color:'#ff7043',petal:'rgba(255,120,80,0.38)', stem:22},
+];
+for (let i = 0; i < 32; i++) {
+  const d = flDefs[i % flDefs.length];
+  const f = document.createElement('div');
+  f.className = 'flower';
+  f.style.cssText = `--fbot:${14+Math.random()*55}px;--fleft:${Math.random()*100}%;
+    --fstem:${d.stem+Math.random()*14}px;--fcolor:${d.color};--fpetal:${d.petal};
+    --fspeed:${2+Math.random()*3}s;--fdelay:${Math.random()*3}s;`;
+  f.innerHTML = `<div class="flower-head"></div><div class="flower-stem"></div>`;
+  flowEl.appendChild(f);
+}
+
+// ---- TREE DRAWING ----
+
+const treeSVG = document.getElementById('tree-svg');
+const stageMessages = [
+  '🌰 A seed nestles into the warm earth',
+  '🌱 The seed stirs — life wakes up!',
+  '🌿 A tiny sprout pushes toward the light',
+  '🪴 The sapling stretches, finding its form',
+  '🌲 Young branches fork and reach out',
+  '🌳 The trunk thickens, the crown fills out',
+  '🌳 A wide canopy fans into the sky',
+  '🌳 A magnificent, wild tree stands proud',
+];
+
+let clicks = 0;
+const MAX = 7;
+let seed = Math.random() * 9999; // for pseudo-randomness per tree
+
+function seededRng(s) {
+  // simple seeded random for stable tree shapes
+  let st = s;
+  return function() {
+    st = (st * 9301 + 49297) % 233280;
+    return st / 233280;
+  };
+}
+
+function rnd(min, max, r) {
+  return min + (r ? r() : Math.random()) * (max - min);
+}
+
+// Recursive branch builder — returns SVG string
+function buildBranch(x1, y1, angle, length, depth, strokeW, r, leavesArr) {
+  if (depth <= 0 || length < 5) return '';
+  const rad = angle * Math.PI / 180;
+  const wobble = rnd(-length * 0.18, length * 0.18, r);
+  const x2 = x1 + Math.cos(rad) * length + wobble * 0.3;
+  const y2 = y1 - Math.sin(rad) * length;
+  const mx = (x1 + x2) / 2 + rnd(-length * 0.2, length * 0.2, r);
+  const my = (y1 + y2) / 2 + rnd(-length * 0.12, length * 0.12, r);
+
+  const trunkFrac = depth / 5;
+  const barkColor = trunkFrac > 0.7 ? '#5c3010' : trunkFrac > 0.4 ? '#7a4520' : '#9b6030';
+
+  let out = `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"
+    stroke="${barkColor}" stroke-width="${Math.max(0.8, strokeW).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
+
+  if (depth === 1) {
+    // Scatter leaf ellipses at tips
+    const lcount = 4 + Math.floor(rnd(0, 5, r));
+    const leafPalette = ['#3a9222','#50b830','#68cc40','#2a7018','#82d850','#4eb030','#a0d860'];
+    for (let i = 0; i < lcount; i++) {
+      const lx = x2 + rnd(-20, 20, r);
+      const ly = y2 + rnd(-20, 12, r);
+      const rx = rnd(8, 18, r);
+      const ry = rnd(5, 13, r);
+      const lr = rnd(-50, 50, r);
+      const col = leafPalette[Math.floor(r() * leafPalette.length)];
+      const op = rnd(0.72, 0.95, r);
+      leavesArr.push({ lx, ly, rx, ry, lr, col, op });
+    }
+    return out;
+  }
+
+  const spread = rnd(22, 38, r);
+  const lf = rnd(0.60, 0.74, r);
+  out += buildBranch(x2, y2, angle + spread + rnd(-7, 7, r), length * lf, depth - 1, strokeW * 0.65, r, leavesArr);
+  out += buildBranch(x2, y2, angle - spread + rnd(-7, 7, r), length * lf, depth - 1, strokeW * 0.65, r, leavesArr);
+  if (depth >= 3 && r() > 0.42) {
+    out += buildBranch(x2, y2, angle + rnd(-10, 10, r), length * lf * 0.78, depth - 1, strokeW * 0.52, r, leavesArr);
+  }
+  return out;
+}
+
+function drawTree(stage) {
+  const r = seededRng(seed + stage * 137);
+  const W = 380, H = 400;
+  const cx = W / 2 + rnd(-4, 4, r);
+  const base = H; // trunk base at very bottom of viewBox
+
+  let defs = `<defs>
+    <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="rgba(0,60,0,0.22)"/>
+    </filter>
+    <filter id="leafGlow">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="trunkGrad" cx="30%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#a06030"/>
+      <stop offset="100%" stop-color="#4a2810"/>
+    </radialGradient>
+  </defs>`;
+
+  let content = defs;
+
+  if (stage === 0) {
+    content += `<ellipse cx="${cx}" cy="${base-9}" rx="9" ry="11" fill="#b5651d" opacity="0">
+      <animate attributeName="opacity" from="0" to="1" dur="0.7s" fill="freeze"/></ellipse>
+      <ellipse cx="${cx-1}" cy="${base-13}" rx="3" ry="5" fill="#7a3e0e" opacity="0">
+      <animate attributeName="opacity" from="0" to="0.7" dur="0.7s" fill="freeze"/></ellipse>`;
+    treeSVG.innerHTML = content;
+    treeSVG.style.opacity = 1;
+    return;
+  }
+
+  const trunkHeights = [0, 20, 55, 100, 148, 185, 215, 235];
+  const trunkWidths  = [0,  6,  9,  13,  17,  21,  24,  26];
+  const trunkH = trunkHeights[stage];
+  const trunkW = trunkWidths[stage];
+  const trunkTop = base - trunkH;
+  const lean = rnd(-8, 8, r); // natural lean
+
+  // Root flares
+  if (stage >= 3) {
+    const rootN = Math.min(stage, 6);
+    for (let i = 0; i < rootN; i++) {
+      const side = i % 2 === 0 ? 1 : -1;
+      const rootX = cx + side * (10 + i * 7);
+      const bulge = rnd(8, 18, r);
+      content += `<path d="M${cx},${base} Q${rootX + bulge * side},${base - 25} ${rootX + rnd(-5,5,r)},${base + 4}"
+        stroke="url(#trunkGrad)" stroke-width="${Math.max(2, trunkW * 0.28).toFixed(1)}"
+        fill="none" stroke-linecap="round" opacity="0.75"/>`;
+    }
+  }
+
+  // Trunk — organic bezier with lean
+  const c1x = cx + rnd(-16, 16, r) + lean * 0.3;
+  const c1y = base - trunkH * 0.32;
+  const c2x = cx + lean + rnd(-12, 12, r);
+  const c2y = base - trunkH * 0.72;
+  const tipX = cx + lean;
+
+  content += `<path d="M${(cx - trunkW/2).toFixed(1)},${base}
+    C${(c1x - trunkW/2).toFixed(1)},${c1y.toFixed(1)} ${(c2x - trunkW/3).toFixed(1)},${c2y.toFixed(1)} ${(tipX - trunkW/4).toFixed(1)},${trunkTop.toFixed(1)}
+    L${(tipX + trunkW/4).toFixed(1)},${trunkTop.toFixed(1)}
+    C${(c2x + trunkW/3).toFixed(1)},${c2y.toFixed(1)} ${(c1x + trunkW/2).toFixed(1)},${c1y.toFixed(1)} ${(cx + trunkW/2).toFixed(1)},${base} Z"
+    fill="url(#trunkGrad)"/>`;
+
+  // Bark highlight
+  content += `<path d="M${(cx - trunkW*0.1).toFixed(1)},${base}
+    C${(c1x).toFixed(1)},${c1y.toFixed(1)} ${(c2x + trunkW*0.1).toFixed(1)},${c2y.toFixed(1)} ${tipX.toFixed(1)},${trunkTop.toFixed(1)}"
+    stroke="rgba(180,110,60,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+
+  // Bark texture knots
+  const knotCount = Math.floor(rnd(2, 5, r));
+  for (let i = 0; i < knotCount; i++) {
+    const ky = base - trunkH * rnd(0.1, 0.85, r);
+    const kx = cx + rnd(-trunkW * 0.25, trunkW * 0.25, r);
+    content += `<ellipse cx="${kx.toFixed(1)}" cy="${ky.toFixed(1)}"
+      rx="${rnd(2,5,r).toFixed(1)}" ry="${rnd(1.5,3,r).toFixed(1)}"
+      fill="rgba(0,0,0,0.12)" transform="rotate(${rnd(-20,20,r).toFixed(1)},${kx.toFixed(1)},${ky.toFixed(1)})"/>`;
+  }
+
+  // Branches
+  const branchDepths = [0, 0, 1, 2, 3, 3, 4, 4];
+  const branchLens   = [0, 0, 22, 38, 55, 70, 82, 90];
+  const depth = branchDepths[stage];
+  const bLen  = branchLens[stage];
+
+  const leavesArr = [];
+
+  if (stage >= 2) {
+    const numBranches = Math.min(2 + stage, 7);
+    for (let i = 0; i < numBranches; i++) {
+      const branchFrac = 0.05 + i * (0.85 / numBranches);
+      const bStartY = base - trunkH * branchFrac;
+      const bStartX = cx + lean * branchFrac;
+      const side = i % 2 === 0 ? 1 : -1;
+      const ang = 90 + side * (18 + i * 9) + rnd(-6, 6, r);
+      const bScale = rnd(0.65, 1.05, r);
+      content += buildBranch(bStartX, bStartY, ang, bLen * bScale, depth, trunkW * 0.36, r, leavesArr);
+    }
+    // Top
+    content += buildBranch(tipX, trunkTop, 90 + rnd(-10, 10, r), bLen * rnd(0.85, 1.1, r), depth, trunkW * 0.4, r, leavesArr);
+  }
+
+  // Draw leaves (behind) — sort by y so lower leaves appear in front
+  leavesArr.sort((a, b) => a.ly - b.ly);
+  let leavesHTML = `<g filter="url(#leafGlow)">`;
+  leavesArr.forEach(({ lx, ly, rx, ry, lr, col, op }) => {
+    leavesHTML += `<ellipse cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"
+      transform="rotate(${lr.toFixed(1)},${lx.toFixed(1)},${ly.toFixed(1)})"
+      fill="${col}" opacity="${op.toFixed(2)}"/>`;
+    // Vein
+    leavesHTML += `<line x1="${lx.toFixed(1)}" y1="${(ly-ry*0.7).toFixed(1)}" x2="${lx.toFixed(1)}" y2="${(ly+ry*0.7).toFixed(1)}"
+      stroke="rgba(0,80,0,0.12)" stroke-width="0.7" transform="rotate(${lr.toFixed(1)},${lx.toFixed(1)},${ly.toFixed(1)})"/>`;
+  });
+  leavesHTML += `</g>`;
+  content += leavesHTML;
+
+  // Acorns / fruit on mature trees
+  if (stage >= 6) {
+    const fruitCols = ['#e83030','#e06010','#cc2020','#d04020'];
+    const fruitCount = 5 + Math.floor(r() * 7);
+    for (let i = 0; i < fruitCount; i++) {
+      const fx = tipX + rnd(-90, 90, r);
+      const fy = trunkTop + rnd(-50, 50, r);
+      const fr = rnd(4, 7.5, r);
+      const fc = fruitCols[Math.floor(r() * fruitCols.length)];
+      content += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${fr.toFixed(1)}" fill="${fc}" opacity="${rnd(0.75,0.95,r).toFixed(2)}"/>`;
+      content += `<line x1="${fx.toFixed(1)}" y1="${(fy-fr).toFixed(1)}" x2="${(fx+rnd(-3,3,r)).toFixed(1)}" y2="${(fy-fr-5).toFixed(1)}" stroke="#4a2810" stroke-width="1.2" stroke-linecap="round"/>`;
+    }
+  }
+
+  treeSVG.innerHTML = content;
+  treeSVG.style.opacity = 1;
+}
+
+// ---- INTERACTION ----
+
+const stageLabel    = document.getElementById('stage-label');
+const clickCounter  = document.getElementById('click-counter');
+const growBtn       = document.getElementById('growBtn');
+const reseedBtn     = document.getElementById('reseedBtn');
+const completionMsg = document.getElementById('completion-msg');
+
+function spawnParticles(fromEl, colors, count = 20) {
+  const rect = fromEl.getBoundingClientRect();
+  const bx = rect.left + rect.width / 2;
+  const by = rect.top + rect.height / 2;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const sz = 6 + Math.random() * 12;
+    const ang = Math.random() * 360;
+    const dist = 50 + Math.random() * 110;
+    const tx = Math.cos(ang * Math.PI / 180) * dist;
+    const ty = Math.sin(ang * Math.PI / 180) * dist - 70;
+    p.style.cssText = `left:${bx}px;top:${by}px;width:${sz}px;height:${sz}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --ptx:${tx}px;--pty:${ty}px;--ptr:${Math.random()*360}deg;
+      --pdur:${0.7+Math.random()*0.7}s;`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+function growTree() {
+  if (clicks >= MAX) return;
+  clicks++;
+
+  spawnParticles(growBtn, ['#5cb82e','#8ce050','#2d7a1c','#b0e870','#FFD700','#68cc40'], 22);
+
+  stageLabel.textContent = stageMessages[clicks];
+  clickCounter.textContent = clicks < MAX ? `Stage ${clicks} of ${MAX}` : '';
+  drawTree(clicks);
+
+  if (clicks >= MAX) {
+    growBtn.classList.add('done');
+    growBtn.textContent = '🌳 Fully Grown!';
+    setTimeout(() => {
+      completionMsg.classList.add('show');
+      reseedBtn.classList.add('show');
+    }, 900);
+    stageLabel.textContent = '🌳 A magnificent, wild tree stands proud';
+  }
+}
+
+function reseed() {
+  // Leaf explosion from tree
+  spawnParticles(treeSVG, ['#5cb82e','#8ce050','#FFD700','#ff5252','#a0d860','#c8f040'], 30);
+
+  treeSVG.style.transition = 'opacity 0.75s ease, transform 0.75s ease';
+  treeSVG.style.opacity = '0';
+  treeSVG.style.transform = 'scaleY(0.02) scaleX(0.08)';
+  treeSVG.style.transformOrigin = 'bottom center';
+
+  reseedBtn.classList.remove('show');
+  completionMsg.classList.remove('show');
+
+  setTimeout(() => {
+    clicks = 0;
+    seed = Math.random() * 9999;  // new tree shape each time
+    treeSVG.innerHTML = '';
+    treeSVG.style.transition = '';
+    treeSVG.style.transform = '';
+    treeSVG.style.opacity = '0';
+
+    growBtn.classList.remove('done');
+    growBtn.textContent = '🌿 Plant & Grow';
+    stageLabel.textContent = '🌰 Click to plant your first seed';
+    clickCounter.textContent = '';
+  }, 850);
+}
+</script>
+</body>
+</html>
