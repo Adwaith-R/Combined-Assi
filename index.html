@@ -1,787 +1,1618 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grow a Tree</title>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --ground-pct: 11%;   /* % from bottom where soil surface sits */
-  --tree-w: min(380px, 90vw);
-  --tree-h: min(400px, 55vw);
-  --btn-pad-v: 16px;
-  --btn-pad-h: 46px;
-  --btn-font: 1rem;
-  --label-font: 0.95rem;
-  --sun-size: 76px;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChaiMaster Pro — India's Smartest Chai Maker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ─────────────────────────────── */
+    :root {
+      --bg:         #0f0a04;
+      --surface:    #1a1006;
+      --card:       #201508;
+      --border:     rgba(255,200,80,0.1);
+      --saffron:    #FF9933;
+      --saffron2:   #FFB84D;
+      --deep-red:   #C0392B;
+      --turmeric:   #E8C040;
+      --green:      #138808;
+      --green2:     #1aaa0a;
+      --cream:      #FFF5E6;
+      --muted:      #9a8870;
+      --text:       #f0e6d3;
+      --r:          14px;
+      --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
 
-/* ── Compact phones ── */
-@media (max-width: 480px) {
-  :root {
-    --tree-w: 92vw;
-    --tree-h: 52vw;
-    --btn-pad-v: 14px;
-    --btn-pad-h: 28px;
-    --btn-font: 0.88rem;
-    --label-font: 0.78rem;
-    --sun-size: 48px;
-    --ground-pct: 10%;
-  }
-}
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    a { color: inherit; text-decoration: none; }
 
-/* ── Tablets portrait ── */
-@media (min-width: 481px) and (max-width: 900px) {
-  :root {
-    --tree-w: min(340px, 72vw);
-    --tree-h: min(360px, 50vw);
-    --btn-pad-v: 15px;
-    --btn-pad-h: 38px;
-    --btn-font: 0.95rem;
-    --label-font: 0.88rem;
-    --sun-size: 60px;
-  }
-}
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--saffron); border-radius: 3px; }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+    /* ─── TRICOLOUR TOP BAR ──────────────────── */
+    .tricolour-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #FF9933 33.3%, #ffffff 33.3% 66.6%, #138808 66.6%);
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+    }
 
-body {
-  overflow: hidden;
-  width: 100vw; height: 100vh;
-  font-family: 'Nunito', sans-serif;
-  /* Prevent double-tap zoom & text selection on mobile */
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  user-select: none;
-}
+    /* ─── UTILITIES ──────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 
-#sky {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg,
-    #3b8fc4 0%, #62b8e8 25%, #a8d8f0 50%, #c8e8a0 75%, #b0d860 100%);
-  z-index: 0;
-}
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--saffron);
+      border: 1px solid rgba(255,153,51,0.35);
+      border-radius: 40px;
+      padding: 5px 14px;
+      margin-bottom: 18px;
+    }
 
-#sun {
-  position: absolute;
-  top: 8%; left: 13%;
-  width: var(--sun-size); height: var(--sun-size);
-  background: radial-gradient(circle, #fffde0 0%, #ffe040 35%, rgba(255,200,0,0) 70%);
-  border-radius: 50%;
-  box-shadow: 0 0 50px 25px rgba(255,220,50,0.4), 0 0 110px 60px rgba(255,180,0,0.18);
-  animation: sunPulse 4s ease-in-out infinite;
-  z-index: 2;
-}
-@keyframes sunPulse {
-  0%,100%{ box-shadow: 0 0 50px 25px rgba(255,220,50,0.4), 0 0 110px 60px rgba(255,180,0,0.18); }
-  50%    { box-shadow: 0 0 70px 35px rgba(255,220,50,0.5), 0 0 150px 80px rgba(255,180,0,0.24); }
-}
+    .section-title {
+      font-family: 'Yatra One', cursive;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      line-height: 1.2;
+      color: var(--cream);
+      letter-spacing: 0.01em;
+    }
 
-#sun-rays {
-  position: absolute;
-  top: 8%; left: 13%;
-  width: var(--sun-size); height: var(--sun-size);
-  z-index: 2;
-  animation: raysRotate 22s linear infinite;
-  transform-origin: center center;
-  pointer-events: none;
-}
-@keyframes raysRotate { to { transform: rotate(360deg); } }
+    .section-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin-top: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+    }
 
-.cloud {
-  position: absolute;
-  border-radius: 60px;
-  background: rgba(255,255,255,0.9);
-  animation: cloudDrift var(--cdur,30s) linear infinite;
-  animation-delay: var(--cdelay,0s);
-  z-index: 3;
-}
-@keyframes cloudDrift {
-  from { transform: translateX(-250px); }
-  to   { transform: translateX(115vw); }
-}
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #FF9933, #e07010);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.03em;
+      padding: 14px 30px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 20px rgba(255,153,51,0.3);
+      white-space: nowrap;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #FFB84D, #FF9933);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(255,153,51,0.45);
+    }
+    .btn-primary:active { transform: scale(0.97); }
 
-#landscape {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 55%;
-  z-index: 4;
-  pointer-events: none;
-}
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 13px 28px;
+      border-radius: 50px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+    .btn-ghost:hover { border-color: var(--saffron); color: var(--saffron); }
 
-.grass-wrap {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%;
-  z-index: 8;
-  pointer-events: none;
-}
-.blade {
-  position: absolute; bottom: 0;
-  width: var(--bw,5px); height: var(--bh,38px);
-  border-radius: 50% 50% 0 0 / 80% 80% 0 0;
-  transform-origin: bottom center;
-  transform: rotate(var(--brot,0deg));
-  animation: sway var(--bspeed,2.4s) ease-in-out infinite alternate;
-  animation-delay: var(--bdelay,0s);
-}
-@keyframes sway {
-  from { transform: rotate(var(--brot,0deg)) skewX(-3deg); }
-  to   { transform: rotate(calc(var(--brot,0deg) + 9deg)) skewX(3deg); }
-}
+    /* ─── NAV ────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 4px; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      transition: background var(--transition), backdrop-filter var(--transition);
+    }
+    nav.scrolled {
+      background: rgba(15,10,4,0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Yatra One', cursive;
+      font-size: 1.5rem;
+      color: var(--cream);
+      letter-spacing: 0.02em;
+    }
+    .nav-logo span { color: var(--saffron); }
+    .nav-logo sub {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--green2);
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { display: flex; align-items: center; gap: 12px; }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: all var(--transition);
+    }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 99;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: 'Yatra One', cursive;
+      font-size: 2rem;
+      color: var(--text);
+      transition: color var(--transition);
+    }
+    .mobile-menu a:hover { color: var(--saffron); }
+    .menu-close {
+      position: absolute;
+      top: 22px; right: 24px;
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+    }
 
-.flower {
-  position: absolute;
-  bottom: var(--fbot,30px); left: var(--fleft,50%);
-  z-index: 9; pointer-events: none;
-  transform-origin: bottom center;
-  animation: flowerSway var(--fspeed,3s) ease-in-out infinite alternate;
-  animation-delay: var(--fdelay,0s);
-}
-@keyframes flowerSway {
-  from { transform: rotate(-5deg); }
-  to   { transform: rotate(5deg); }
-}
-.flower-stem { width:2px; height:var(--fstem,28px); background:#4a8c28; margin:0 auto; border-radius:2px; }
-.flower-head {
-  width:10px; height:10px; border-radius:50%;
-  background:var(--fcolor,#ff6b6b);
-  margin:0 auto; box-shadow: 0 0 5px rgba(0,0,0,0.12); position:relative;
-}
-.flower-head::before {
-  content:''; position:absolute; inset:-4px; border-radius:50%;
-  background:var(--fpetal,rgba(255,200,100,0.45)); z-index:-1;
-}
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta .btn-primary { display: none; }
+      .hamburger { display: flex; }
+    }
 
-.bird {
-  position: absolute; z-index: 5;
-  animation: birdFly var(--bdur,12s) linear infinite;
-  animation-delay: var(--birddelay,0s);
-  top: var(--btop,15%);
-}
-@keyframes birdFly {
-  0%   { left:-60px; opacity:0; }
-  5%   { opacity:1; }
-  95%  { opacity:1; }
-  100% { left:110vw; opacity:0; }
-}
-.bird svg { animation: wingFlap 0.45s ease-in-out infinite alternate; }
-@keyframes wingFlap {
-  from { transform: scaleY(1); }
-  to   { transform: scaleY(0.55); }
-}
+    /* ─── MANDALA / DECORATIVE SVG ───────────── */
+    .mandala {
+      position: absolute;
+      opacity: 0.06;
+      pointer-events: none;
+    }
 
-.butterfly {
-  position: absolute; z-index: 10; pointer-events: none;
-  animation: buffloat var(--bufdur,8s) ease-in-out infinite;
-  animation-delay: var(--bufdelay,0s);
-}
-@keyframes buffloat {
-  0%  { transform: translate(0,0) rotate(-6deg); }
-  25% { transform: translate(25px,-22px) rotate(6deg); }
-  50% { transform: translate(50px,4px) rotate(-4deg); }
-  75% { transform: translate(25px,18px) rotate(6deg); }
-  100%{ transform: translate(0,0) rotate(-6deg); }
-}
+    /* ─── HERO ───────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 110px 0 70px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+    .hero-glow-1 {
+      width: 600px; height: 600px;
+      background: rgba(255,153,51,0.18);
+      top: -150px; right: -120px;
+    }
+    .hero-glow-2 {
+      width: 350px; height: 350px;
+      background: rgba(192,57,43,0.14);
+      bottom: -80px; left: -80px;
+    }
+    .hero-glow-3 {
+      width: 300px; height: 300px;
+      background: rgba(19,136,8,0.1);
+      top: 40%; right: 30%;
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,153,51,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,153,51,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 60px;
+    }
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .hero-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--saffron);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,153,51,0.5); }
+      50%      { box-shadow: 0 0 0 8px rgba(255,153,51,0); }
+    }
+    .hero-eyebrow-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--saffron);
+    }
+    .hero-title {
+      font-family: 'Yatra One', cursive;
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      line-height: 1.12;
+      color: var(--cream);
+      margin-bottom: 20px;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--saffron);
+    }
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 460px;
+      margin-bottom: 34px;
+      font-weight: 300;
+      line-height: 1.75;
+    }
+    .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .hero-trust {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 36px;
+    }
+    .hero-trust-flags { display: flex; gap: 6px; font-size: 1.3rem; }
+    .hero-trust-text { font-size: 0.8rem; color: var(--muted); }
+    .hero-trust-text strong { color: var(--text); }
+    .hero-badges {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .badge-pill {
+      background: rgba(255,153,51,0.1);
+      border: 1px solid rgba(255,153,51,0.2);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--saffron);
+      letter-spacing: 0.04em;
+    }
 
-#light-rays {
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 1; overflow: hidden;
-}
-.ray {
-  position: absolute; top:-10%; left: var(--rleft,50%);
-  width: 4px; height: 130%;
-  background: linear-gradient(to bottom, rgba(255,240,100,0.22), transparent);
-  transform: rotate(var(--rrot,10deg));
-  transform-origin: top center;
-  animation: rayShimmer var(--rspeed,4s) ease-in-out infinite alternate;
-  animation-delay: var(--rdelay,0s);
-}
-@keyframes rayShimmer {
-  from { opacity:0.3; width:4px; }
-  to   { opacity:1;   width:10px; }
-}
+    /* Product visual card */
+    .hero-visual { display: flex; justify-content: center; }
+    .product-card {
+      width: 320px;
+      background: var(--card);
+      border-radius: 28px;
+      border: 1px solid rgba(255,153,51,0.15);
+      padding: 28px 24px 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,200,80,0.07);
+    }
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(255,153,51,0.14), transparent 70%);
+      border-radius: 50%;
+    }
+    /* Chai maker CSS illustration */
+    .chai-maker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0 8px;
+      position: relative;
+    }
+    /* pot body */
+    .cm-pot {
+      width: 110px; height: 100px;
+      background: linear-gradient(160deg, #c47830 0%, #7a3e10 60%, #4a2208 100%);
+      border-radius: 50% 50% 45% 45% / 40% 40% 55% 55%;
+      position: relative;
+      box-shadow: 4px 8px 24px rgba(0,0,0,0.5), inset 2px 2px 0 rgba(255,200,80,0.15);
+      border: 1px solid rgba(255,180,60,0.2);
+    }
+    /* pot shine */
+    .cm-pot::before {
+      content: '';
+      position: absolute;
+      top: 10px; left: 18px;
+      width: 30px; height: 16px;
+      background: rgba(255,230,180,0.2);
+      border-radius: 50%;
+      transform: rotate(-20deg);
+    }
+    /* screen on pot */
+    .cm-pot-screen {
+      position: absolute;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
+      width: 60px; height: 30px;
+      background: #0a1208;
+      border-radius: 8px;
+      border: 1px solid rgba(255,153,51,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .cm-screen-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--saffron);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+    .cm-screen-dot.green { background: var(--green2); animation-delay: 0.5s; }
+    /* lid */
+    .cm-lid {
+      width: 80px; height: 18px;
+      background: linear-gradient(160deg, #d48840, #8a4820);
+      border-radius: 50% 50% 0 0 / 80% 80% 0 0;
+      margin-bottom: -4px;
+      border: 1px solid rgba(255,180,60,0.2);
+      border-bottom: none;
+      position: relative;
+      z-index: 1;
+    }
+    .cm-lid-knob {
+      width: 14px; height: 14px;
+      background: radial-gradient(circle, #e8a840, #c06820);
+      border-radius: 50%;
+      margin: 0 auto;
+      position: relative;
+      top: -8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    /* handle */
+    .cm-handle {
+      position: absolute;
+      right: -22px; top: 30px;
+      width: 28px; height: 38px;
+      border: 3px solid #7a3e10;
+      border-left: none;
+      border-radius: 0 20px 20px 0;
+    }
+    /* steam */
+    .cm-steam {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+    .steam-curl {
+      width: 3px; height: 26px;
+      background: linear-gradient(to top, rgba(255,200,120,0.5), transparent);
+      border-radius: 2px;
+      animation: steamUp var(--sd, 1.6s) ease-in-out infinite;
+      animation-delay: var(--sdelay, 0s);
+    }
+    @keyframes steamUp {
+      0%,100% { transform: scaleY(0.6) translateY(0); opacity:0.4; }
+      50%      { transform: scaleY(1.1) translateY(-7px); opacity:0.9; }
+    }
+    /* masala dots decoration */
+    .masala-dots {
+      display: flex;
+      gap: 5px;
+      margin-top: 14px;
+    }
+    .masala-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    /* card badges */
+    .card-badge {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(255,153,51,0.15);
+      border: 1px solid rgba(255,153,51,0.3);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--saffron);
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .card-price-val {
+      font-family: 'Yatra One', cursive;
+      font-size: 1.7rem;
+      color: var(--cream);
+    }
+    .card-price-val span { font-family: 'Poppins', sans-serif; font-size: 0.78rem; color: var(--muted); margin-left: 4px; font-weight: 400; }
+    .card-emi { font-size: 0.72rem; color: var(--green2); font-weight: 600; margin-top: 3px; }
+    .card-add {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #FF9933, #e07010);
+      border: none; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; color: #fff; cursor: pointer;
+      transition: transform var(--transition);
+      box-shadow: 0 4px 14px rgba(255,153,51,0.4);
+    }
+    .card-add:hover { transform: scale(1.12); }
 
-/* ── Tree scene ── */
-#tree-scene {
-  position: absolute;
-  bottom: var(--ground-pct);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 15;
-  width: var(--tree-w);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-#tree-svg {
-  width: var(--tree-w);
-  height: var(--tree-h);
-  overflow: visible;
-  display: block;
-}
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; text-align: center; }
+      .hero-desc, .section-sub { margin-left: auto; margin-right: auto; }
+      .hero-actions, .hero-eyebrow, .hero-trust, .hero-badges { justify-content: center; }
+      .hero-visual { margin-top: 10px; }
+    }
 
-/* ── UI labels & buttons ── */
-#stage-label {
-  position: fixed; top: 14px; left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Dela Gothic One', sans-serif;
-  font-size: var(--label-font); color: #2a4a10;
-  background: rgba(255,255,255,0.65);
-  backdrop-filter: blur(8px);
-  padding: 8px 20px; border-radius: 40px;
-  box-shadow: 0 2px 14px rgba(0,0,0,0.1);
-  z-index: 50;
-  /* wrap gracefully on small screens */
-  white-space: normal;
-  text-align: center;
-  max-width: 88vw;
-  transition: all 0.5s ease;
-}
+    /* ─── MARQUEE / AWARDS ───────────────────── */
+    .marquee-strip {
+      padding: 22px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 56px;
+      animation: marquee 24s linear infinite;
+      white-space: nowrap;
+    }
+    .marquee-item {
+      flex-shrink: 0;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .marquee-item::before { content: '✦'; color: var(--saffron); font-size: 0.6rem; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
 
-#click-counter {
-  position: fixed; top: 56px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.68rem; color: rgba(40,70,10,0.5);
-  letter-spacing: 0.18em; text-transform: uppercase; z-index: 50;
-}
+    /* ─── FEATURES ───────────────────────────── */
+    .features { padding: 96px 0; }
+    .features-header { margin-bottom: 54px; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+    @media (max-width: 900px) { .features-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .features-grid { grid-template-columns: 1fr; } }
 
-/* ── Grow button ── */
-.grow-btn {
-  position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom, 20px) + 16px);
-  left: 50%; transform: translateX(-50%);
-  z-index: 50;
-  background: linear-gradient(145deg,#5cb82e,#3a8018);
-  border: none; color: #f0ffe0;
-  font-family: 'Dela Gothic One', sans-serif;
-  font-size: var(--btn-font); letter-spacing: 0.07em;
-  padding: var(--btn-pad-v) var(--btn-pad-h);
-  cursor: pointer; border-radius: 50px;
-  min-height: 52px; /* touch target */
-  box-shadow: 0 6px 22px rgba(50,120,16,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
-  transition: all 0.25s ease;
-  white-space: nowrap;
-}
-.grow-btn:hover {
-  background: linear-gradient(145deg,#6ecf38,#499e20);
-  box-shadow: 0 10px 30px rgba(50,120,16,0.55);
-  transform: translateX(-50%) translateY(-3px);
-}
-.grow-btn:active { transform: translateX(-50%) scale(0.95); }
-.grow-btn.done {
-  background: linear-gradient(145deg,#b5d98a,#8cbf5a);
-  color: rgba(40,70,10,0.45); pointer-events: none;
-}
+    .feat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 30px 26px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,153,51,0.05), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
+      border-radius: var(--r);
+    }
+    .feat-card:hover { border-color: rgba(255,153,51,0.3); transform: translateY(-4px); }
+    .feat-card:hover::after { opacity: 1; }
+    .feat-icon {
+      width: 50px; height: 50px;
+      background: rgba(255,153,51,0.12);
+      border: 1px solid rgba(255,153,51,0.2);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.45rem;
+      margin-bottom: 18px;
+    }
+    .feat-title {
+      font-family: 'Yatra One', cursive;
+      font-size: 1rem;
+      color: var(--cream);
+      margin-bottom: 9px;
+    }
+    .feat-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
 
-/* ── Reseed button ── */
-.reseed-btn {
-  position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom, 20px) + 16px);
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  z-index: 50;
-  background: linear-gradient(145deg,#e0853a,#b05e1e);
-  border: none; color: #fff8ee;
-  font-family: 'Dela Gothic One', sans-serif;
-  font-size: calc(var(--btn-font) * 0.88); letter-spacing: 0.07em;
-  padding: calc(var(--btn-pad-v) * 0.88) calc(var(--btn-pad-h) * 0.78);
-  cursor: pointer; border-radius: 50px;
-  min-height: 48px;
-  box-shadow: 0 6px 18px rgba(170,80,20,0.4);
-  opacity: 0; pointer-events: none;
-  transition: all 0.55s cubic-bezier(0.34,1.56,0.64,1);
-  white-space: nowrap;
-}
-.reseed-btn.show {
-  opacity: 1; pointer-events: all;
-  transform: translateX(-50%) translateY(0);
-  bottom: calc(max(20px, env(safe-area-inset-bottom, 20px) + 16px) + 68px);
-}
-.reseed-btn:hover {
-  background: linear-gradient(145deg,#f0943f,#c06c22);
-  transform: translateX(-50%) translateY(-2px);
-}
+    /* ─── HOW IT WORKS ───────────────────────── */
+    .how { padding: 96px 0; }
+    .how-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: center;
+    }
+    @media (max-width: 860px) { .how-inner { grid-template-columns: 1fr; } }
+    .steps { display: flex; flex-direction: column; }
+    .step {
+      display: flex;
+      gap: 22px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Yatra One', cursive;
+      font-size: 0.85rem;
+      color: var(--muted);
+      transition: all var(--transition);
+    }
+    .step.active .step-num {
+      background: var(--saffron);
+      border-color: var(--saffron);
+      color: #fff;
+    }
+    .step-title {
+      font-family: 'Yatra One', cursive;
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      transition: color var(--transition);
+    }
+    .step.active .step-title { color: var(--cream); }
+    .step-text {
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.65;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.4s ease;
+      opacity: 0;
+    }
+    .step.active .step-text { max-height: 100px; opacity: 1; }
 
-.particle {
-  position: fixed; pointer-events: none;
-  border-radius: 50% 0 50% 0;
-  animation: poof var(--pdur,1s) ease-out forwards;
-  z-index: 60;
-}
-@keyframes poof {
-  0%  { opacity:1; transform:translate(0,0) rotate(0deg) scale(1); }
-  100%{ opacity:0; transform:translate(var(--ptx),var(--pty)) rotate(var(--ptr)) scale(0.15); }
-}
+    .how-visual {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .how-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 40%, rgba(255,153,51,0.1), transparent 70%);
+    }
+    .how-display {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+    }
+    .how-emoji {
+      font-size: 5rem;
+      line-height: 1;
+      margin-bottom: 14px;
+      display: block;
+      animation: floatUp 3s ease-in-out infinite;
+    }
+    @keyframes floatUp {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    .how-label {
+      font-family: 'Yatra One', cursive;
+      font-size: 1.1rem;
+      color: var(--cream);
+    }
+    .how-sub { font-size: 0.84rem; color: var(--muted); margin-top: 6px; }
 
-#completion-msg {
-  position: fixed; top: -70px; left: 50%; transform: translateX(-50%);
-  font-family: 'Dela Gothic One', sans-serif;
-  font-size: clamp(0.82rem, 2.5vw, 1.05rem); color: #fff;
-  background: linear-gradient(135deg,#5cb82e,#3a8018);
-  padding: 12px 24px; border-radius: 50px;
-  box-shadow: 0 8px 22px rgba(50,120,16,0.45);
-  z-index: 55;
-  max-width: 90vw; text-align: center;
-  transition: top 0.7s cubic-bezier(0.34,1.56,0.64,1);
-}
-#completion-msg.show { top: 86px; }
-</style>
+    /* ─── VARIANTS ───────────────────────────── */
+    .variants { padding: 96px 0; }
+    .variants-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 50px;
+    }
+    @media (max-width: 860px) { .variants-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .variants-grid { grid-template-columns: 1fr; } }
+    .variant-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px 20px;
+      text-align: center;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+    .variant-card:hover, .variant-card.active {
+      border-color: rgba(255,153,51,0.4);
+      transform: translateY(-4px);
+    }
+    .variant-emoji { font-size: 2.4rem; margin-bottom: 12px; }
+    .variant-name {
+      font-family: 'Yatra One', cursive;
+      font-size: 0.95rem;
+      color: var(--cream);
+      margin-bottom: 6px;
+    }
+    .variant-ingredients { font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
+
+    /* ─── SPECS ──────────────────────────────── */
+    .specs { padding: 96px 0; }
+    .specs-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .specs-inner { grid-template-columns: 1fr; } }
+    .spec-list { margin-top: 36px; }
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-key { color: var(--muted); }
+    .spec-val { font-weight: 600; color: var(--cream); }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 26px 20px;
+      transition: border-color var(--transition);
+    }
+    .stat-card:hover { border-color: rgba(255,153,51,0.3); }
+    .stat-num {
+      font-family: 'Yatra One', cursive;
+      font-size: 2rem;
+      color: var(--saffron);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--muted); }
+
+    /* ─── TESTIMONIALS ───────────────────────── */
+    .testimonials { padding: 96px 0; }
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-top: 50px;
+    }
+    @media (max-width: 900px) { .testi-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .testi-grid { grid-template-columns: 1fr; } }
+    .testi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 26px 24px;
+      transition: border-color var(--transition);
+    }
+    .testi-card:hover { border-color: rgba(255,153,51,0.25); }
+    .testi-stars { color: var(--saffron); font-size: 0.82rem; margin-bottom: 13px; letter-spacing: 2px; }
+    .testi-text {
+      font-size: 0.9rem; color: var(--muted);
+      line-height: 1.7; margin-bottom: 18px;
+      font-style: italic;
+    }
+    .testi-text::before { content: '"'; }
+    .testi-text::after  { content: '"'; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Yatra One', cursive;
+      font-size: 0.9rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .testi-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .testi-role { font-size: 0.74rem; color: var(--muted); }
+
+    /* ─── PRICING ────────────────────────────── */
+    .pricing { padding: 96px 0; }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-top: 50px;
+    }
+    @media (max-width: 860px) { .pricing-grid { grid-template-columns: 1fr; max-width: 380px; margin-left:auto; margin-right:auto; } }
+    .price-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 34px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      transition: all var(--transition);
+    }
+    .price-card:hover { transform: translateY(-4px); }
+    .price-card.featured {
+      border-color: rgba(255,153,51,0.45);
+      background: linear-gradient(160deg, rgba(255,153,51,0.07), var(--card));
+      position: relative;
+    }
+    .price-card.featured::before {
+      content: '🏆 Most Popular';
+      position: absolute;
+      top: -14px; left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #FF9933, #e07010);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 5px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .price-tier {
+      font-family: 'Yatra One', cursive;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: var(--saffron);
+    }
+    .price-amount {
+      font-family: 'Yatra One', cursive;
+      font-size: 2.6rem;
+      color: var(--cream);
+      line-height: 1;
+    }
+    .price-amount sup { font-size: 1.1rem; vertical-align: top; margin-top: 5px; }
+    .price-emi { font-size: 0.76rem; color: var(--green2); font-weight: 600; margin-top: 4px; }
+    .price-desc { font-size: 0.84rem; color: var(--muted); }
+    .price-features { display: flex; flex-direction: column; gap: 9px; }
+    .price-feat {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.86rem; color: var(--muted);
+    }
+    .price-feat-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(255,153,51,0.12);
+      border: 1px solid rgba(255,153,51,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; color: var(--saffron); flex-shrink: 0;
+    }
+    .price-feat.off { opacity: 0.3; text-decoration: line-through; }
+    .price-feat.off .price-feat-check { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: var(--muted); }
+
+    /* ─── FESTIVE BANNER ─────────────────────── */
+    .festive-banner {
+      margin: 20px 0 96px;
+      background: linear-gradient(135deg, rgba(255,153,51,0.1), rgba(192,57,43,0.08), rgba(19,136,8,0.08));
+      border: 1px solid rgba(255,153,51,0.2);
+      border-radius: 24px;
+      padding: 56px 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 36px;
+      flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
+    }
+    .festive-banner::before {
+      content: '🪔✨🌸🎊🪔✨🌸🎊🪔✨';
+      position: absolute;
+      top: 12px; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.4;
+      letter-spacing: 8px;
+    }
+    .festive-title {
+      font-family: 'Yatra One', cursive;
+      font-size: clamp(1.4rem, 2.8vw, 2rem);
+      color: var(--cream);
+      margin-bottom: 6px;
+    }
+    .festive-sub { font-size: 0.9rem; color: var(--muted); }
+    .festive-sub strong { color: var(--saffron); }
+
+    /* ─── NOTIFY FORM ────────────────────────── */
+    .notify-form { display: flex; gap: 10px; flex-wrap: wrap; }
+    .notify-input {
+      flex: 1; min-width: 200px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 13px 20px;
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .notify-input::placeholder { color: var(--muted); }
+    .notify-input:focus { border-color: rgba(255,153,51,0.4); }
+
+    /* ─── FOOTER ─────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0 36px;
+    }
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 44px;
+    }
+    @media (max-width: 860px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; } }
+    .footer-brand p {
+      font-size: 0.86rem; color: var(--muted);
+      margin-top: 12px; line-height: 1.65; max-width: 250px;
+    }
+    .footer-col-title {
+      font-family: 'Yatra One', cursive;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .footer-links { display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a {
+      font-size: 0.86rem; color: var(--muted);
+      transition: color var(--transition);
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 26px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .footer-bottom p { font-size: 0.8rem; color: var(--muted); }
+    .flag-text { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+    .social-links { display: flex; gap: 10px; }
+    .social-link {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; color: var(--muted);
+      transition: all var(--transition);
+    }
+    .social-link:hover { border-color: var(--saffron); color: var(--saffron); }
+
+    /* ─── TOAST ──────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px; right: 22px;
+      background: var(--card);
+      border: 1px solid rgba(255,153,51,0.3);
+      border-radius: 14px;
+      padding: 13px 20px;
+      font-size: 0.86rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 300;
+      pointer-events: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      max-width: 90vw;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ─── FADE-UP ANIMATIONS ─────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── DIVIDER ────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--saffron), transparent);
+      opacity: 0.2;
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
 
-<div id="sky"></div>
-<div id="sun"></div>
-<svg id="sun-rays" viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg">
-  <g stroke="rgba(255,220,50,0.55)" stroke-width="2.5" stroke-linecap="round">
-    <line x1="38" y1="2"  x2="38" y2="14"/>
-    <line x1="38" y1="62" x2="38" y2="74"/>
-    <line x1="2"  y1="38" x2="14" y2="38"/>
-    <line x1="62" y1="38" x2="74" y2="38"/>
-    <line x1="12" y1="12" x2="20" y2="20"/>
-    <line x1="56" y1="56" x2="64" y2="64"/>
-    <line x1="64" y1="12" x2="56" y2="20"/>
-    <line x1="20" y1="56" x2="12" y2="64"/>
-  </g>
-</svg>
+<!-- Tricolour top bar -->
+<div class="tricolour-bar"></div>
 
-<div id="light-rays"></div>
-<div id="clouds"></div>
-<div id="birds"></div>
-<div id="butterflies"></div>
-
-<svg id="landscape" viewBox="0 0 1440 500" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-  <!-- Distant hazy hills -->
-  <ellipse cx="250"  cy="480" rx="360" ry="130" fill="#9ecf58" opacity="0.45"/>
-  <ellipse cx="900"  cy="490" rx="430" ry="145" fill="#8fc048" opacity="0.4"/>
-  <ellipse cx="1400" cy="478" rx="300" ry="120" fill="#9ecf58" opacity="0.45"/>
-  <!-- Mid hills -->
-  <ellipse cx="80"   cy="500" rx="280" ry="125" fill="#66aa30"/>
-  <ellipse cx="500"  cy="505" rx="360" ry="135" fill="#58981e"/>
-  <ellipse cx="1000" cy="502" rx="400" ry="130" fill="#60a428"/>
-  <ellipse cx="1420" cy="506" rx="300" ry="128" fill="#58981e"/>
-  <!-- Ground -->
-  <rect x="0" y="415" width="1440" height="85" fill="#5a3520"/>
-  <rect x="0" y="400" width="1440" height="22" fill="#7a4f2e"/>
-  <ellipse cx="720" cy="400" rx="950" ry="28" fill="#a0652a"/>
-  <!-- Soil surface detail -->
-  <ellipse cx="360" cy="406" rx="200" ry="10" fill="rgba(80,40,10,0.25)"/>
-  <ellipse cx="1080" cy="408" rx="180" ry="9"  fill="rgba(80,40,10,0.2)"/>
-</svg>
-
-<div class="grass-wrap" id="grass-wrap"></div>
-<div id="flowers"></div>
-
-<div id="tree-scene">
-  <svg id="tree-svg" viewBox="0 0 380 400" xmlns="http://www.w3.org/2000/svg" style="opacity:0"></svg>
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="menu-close" onclick="closeMobileMenu()">✕</button>
+  <a href="#features" onclick="closeMobileMenu()">Features</a>
+  <a href="#how"      onclick="closeMobileMenu()">How It Works</a>
+  <a href="#variants" onclick="closeMobileMenu()">Chai Types</a>
+  <a href="#pricing"  onclick="closeMobileMenu()">Pricing</a>
+  <a href="#contact"  onclick="closeMobileMenu()">Contact</a>
 </div>
 
-<div id="stage-label">🌰 Click to plant your first seed</div>
-<div id="click-counter"></div>
-<button class="grow-btn" id="growBtn" onclick="growTree()">🌿 Plant &amp; Grow</button>
-<button class="reseed-btn" id="reseedBtn" onclick="reseed()">🌰 Plant a New Seed</button>
-<div id="completion-msg">🌳 Your tree is fully grown!</div>
+<!-- NAV -->
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">ChaiMaster<span>Pro</span><sub>🇮🇳 Made in India</sub></a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#variants">Chai Types</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <button class="btn-primary" onclick="showToast('Added to Cart! 🛒')">Buy Now — ₹12,999</button>
+      <button class="hamburger" onclick="openMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-glow hero-glow-3"></div>
+    <div class="hero-grid"></div>
+    <!-- Mandala decoration -->
+    <svg class="mandala" style="top:-100px;right:-100px;width:500px;height:500px;" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="90" fill="none" stroke="#FF9933" stroke-width="0.5"/>
+      <circle cx="100" cy="100" r="70" fill="none" stroke="#FF9933" stroke-width="0.5" stroke-dasharray="4 6"/>
+      <circle cx="100" cy="100" r="50" fill="none" stroke="#FF9933" stroke-width="0.5"/>
+      <circle cx="100" cy="100" r="30" fill="none" stroke="#FF9933" stroke-width="0.5" stroke-dasharray="2 4"/>
+      <g stroke="#FF9933" stroke-width="0.4" fill="none">
+        <line x1="100" y1="10" x2="100" y2="190"/>
+        <line x1="10" y1="100" x2="190" y2="100"/>
+        <line x1="27" y1="27" x2="173" y2="173"/>
+        <line x1="173" y1="27" x2="27" y2="173"/>
+        <line x1="100" y1="10" x2="100" y2="190" transform="rotate(22.5 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="190" transform="rotate(45 100 100)"/>
+        <line x1="100" y1="10" x2="100" y2="190" transform="rotate(67.5 100 100)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-eyebrow">
+          <div class="hero-dot"></div>
+          <span class="hero-eyebrow-text">New Generation — 2025 Launch 🇮🇳</span>
+        </div>
+        <h1 class="hero-title">
+          Start Every Morning,<br>with <em>Perfect Chai</em>
+        </h1>
+        <p class="hero-desc">
+          ChaiMaster Pro — India's first AI-powered smart chai maker. From masala chai to cutting chai, perfection in every sip. Just press one button.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="showToast('Added to Cart! 🛒')">
+            Buy Now — ₹12,999 →
+          </button>
+          <a href="#how" class="btn-ghost">How does it work?</a>
+        </div>
+        <div class="hero-badges">
+          <div class="badge-pill">🇮🇳 Made in India</div>
+          <div class="badge-pill">ISI Certified</div>
+          <div class="badge-pill">BIS Approved</div>
+          <div class="badge-pill">No Cost EMI</div>
+        </div>
+        <div class="hero-trust">
+          <div class="hero-trust-flags">🏠 🏪 🏨</div>
+          <p class="hero-trust-text"><strong>50,000+</strong> Indian homes · ⭐ 4.8/5</p>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="product-card">
+          <div class="card-badge">AI-Powered ☕</div>
+          <div class="chai-maker">
+            <div class="cm-steam">
+              <div class="steam-curl" style="--sd:1.3s;--sdelay:0s"></div>
+              <div class="steam-curl" style="--sd:1.7s;--sdelay:0.35s"></div>
+              <div class="steam-curl" style="--sd:1.5s;--sdelay:0.7s"></div>
+            </div>
+            <div class="cm-lid-knob"></div>
+            <div class="cm-lid"></div>
+            <div class="cm-pot">
+              <div class="cm-pot-screen">
+                <div class="cm-screen-dot"></div>
+                <div class="cm-screen-dot green"></div>
+              </div>
+              <div class="cm-handle"></div>
+            </div>
+            <div class="masala-dots">
+              <div class="masala-dot" style="background:#FF9933"></div>
+              <div class="masala-dot" style="background:#C0392B"></div>
+              <div class="masala-dot" style="background:#E8C040"></div>
+              <div class="masala-dot" style="background:#138808"></div>
+              <div class="masala-dot" style="background:#8B4513"></div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div>
+              <div class="card-price-val">₹12,999<span>/ one-time</span></div>
+              <div class="card-emi">✅ ₹1,084/month — No Cost EMI</div>
+            </div>
+            <button class="card-add" onclick="showToast('Added to Cart! 🛒')">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip">
+  <div class="container">
+    <div class="marquee-track" id="marqueeTrack"></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header fade-up">
+      <div class="tag">Features</div>
+      <h2 class="section-title">The Real Chai Experience,<br>Now Smarter Than Ever</h2>
+      <p class="section-sub">Every feature is built so your chai is always as perfect as grandma used to make it.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🧠</div>
+        <div class="feat-title">AI Taste Learning</div>
+        <p class="feat-desc">After 30+ brews, ChaiMaster Pro remembers your preference — strong, light, or full masala.</p>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🌡️</div>
+        <div class="feat-title">Masala Precision Brew</div>
+        <p class="feat-desc">Ginger, cardamom, tulsi — a unique temperature profile for every spice. Accuracy of ±0.5°C.</p>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">Full Hindi App Support</div>
+        <p class="feat-desc">The ChaiMaster app works entirely in Hindi. Schedule your morning brew, save recipes, and brew by voice with Siri or Google.</p>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Quick Boil — 90 Seconds</div>
+        <p class="feat-desc">Our advanced heating element boils water in just 90 seconds. Perfect even on a busy morning.</p>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🫙</div>
+        <div class="feat-title">Auto Masala Dispenser</div>
+        <p class="feat-desc">Built-in 5-compartment masala dabba. Ginger, cardamom, tulsi, cinnamon, black pepper — all automatic.</p>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🌿</div>
+        <div class="feat-title">BPA-Free & Safe</div>
+        <p class="feat-desc">All food-grade stainless steel components. ISI certified, BIS approved. Completely safe for your family.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="how-inner">
+      <div>
+        <div class="tag">How It Works</div>
+        <h2 class="section-title fade-up">Perfect Chai<br>in Four Steps</h2>
+        <div class="steps" id="steps">
+          <div class="step active" onclick="setStep(0)">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Tell Us Your Preference</div>
+              <div class="step-text">Set up your profile once in the app — strong, light, masala, or milk-to-tea ratio. Available in Hindi too.</div>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(1)">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">AI Calibrates</div>
+              <div class="step-text">AI automatically sets the temperature, brewing time, and masala quantity according to your preference.</div>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(2)">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">One Button, Perfect Chai</div>
+              <div class="step-text">Just press START or schedule from the app. Piping hot chai is ready in 90 seconds.</div>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(3)">
+            <div class="step-num">4</div>
+            <div>
+              <div class="step-title">Rate It, Improve It</div>
+              <div class="step-text">Rate each brew in the app. ChaiMaster learns from every cup and makes the next one even better.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="how-visual">
+        <div class="how-display">
+          <span class="how-emoji" id="howEmoji">⚙️</span>
+          <div class="how-label" id="howLabel">Tell Us Your Preference</div>
+          <div class="how-sub"   id="howSub">Set up your profile in the Hindi app</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CHAI VARIANTS -->
+<section class="variants" id="variants">
+  <div class="container">
+    <div class="fade-up" style="text-align:center;max-width:560px;margin:0 auto">
+      <div class="tag">Chai Types</div>
+      <h2 class="section-title">Every Region's Chai,<br>One Machine</h2>
+      <p class="section-sub" style="margin:12px auto 0">150+ pre-loaded Indian chai recipes. From Darjeeling to Irani Chai.</p>
+    </div>
+    <div class="variants-grid">
+      <div class="variant-card active" onclick="selectVariant(this)">
+        <div class="variant-emoji">☕</div>
+        <div class="variant-name">Masala Chai</div>
+        <div class="variant-ingredients">Ginger · Cardamom · Cinnamon · Black Pepper · Tulsi</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">🫖</div>
+        <div class="variant-name">Cutting Chai</div>
+        <div class="variant-ingredients">Mumbai style · Strong · More milk · Less water</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">🍵</div>
+        <div class="variant-name">Darjeeling Tea</div>
+        <div class="variant-ingredients">First flush · Light brew · Bergamot notes</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">🌿</div>
+        <div class="variant-name">Tulsi-Ginger</div>
+        <div class="variant-ingredients">Tulsi · Fresh ginger · Light tea leaves · Desi ghee</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">🧡</div>
+        <div class="variant-name">Kashmiri Kahwa</div>
+        <div class="variant-ingredients">Saffron · Almonds · Cardamom · Cinnamon · Rose petals</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">🫙</div>
+        <div class="variant-name">Irani Chai</div>
+        <div class="variant-ingredients">Hyderabad style · Sweet · Fresh cream · Osmania biscuit</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">💛</div>
+        <div class="variant-name">Turmeric Chai</div>
+        <div class="variant-ingredients">Turmeric · Black pepper · Ginger · Honey · Lemon</div>
+      </div>
+      <div class="variant-card" onclick="selectVariant(this)">
+        <div class="variant-emoji">❄️</div>
+        <div class="variant-name">Iced Chai Latte</div>
+        <div class="variant-ingredients">Cold brew style · Fresh milk · Vanilla · Jaggery</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SPECS -->
+<section class="specs" id="specs">
+  <div class="container">
+    <div class="specs-inner">
+      <div class="fade-up">
+        <div class="tag">Specifications</div>
+        <h2 class="section-title">Built to Last<br>10 Years</h2>
+        <p class="section-sub">Food-grade stainless steel body, ISI certified components, and specially designed for Indian voltage (220V).</p>
+        <div class="spec-list">
+          <div class="spec-row"><span class="spec-key">Water Capacity</span><span class="spec-val">2 Litres</span></div>
+          <div class="spec-row"><span class="spec-key">Cups per Brew</span><span class="spec-val">1–6 Cups</span></div>
+          <div class="spec-row"><span class="spec-key">Heat-Up Time</span><span class="spec-val">90 seconds</span></div>
+          <div class="spec-row"><span class="spec-key">Temperature</span><span class="spec-val">70°C – 100°C (±0.5°C)</span></div>
+          <div class="spec-row"><span class="spec-key">Masala Compartments</span><span class="spec-val">5 auto-dispense</span></div>
+          <div class="spec-row"><span class="spec-key">Voltage</span><span class="spec-val">220V – 240V / 50Hz</span></div>
+          <div class="spec-row"><span class="spec-key">Connectivity</span><span class="spec-val">Wi-Fi + Bluetooth 5.0</span></div>
+          <div class="spec-row"><span class="spec-key">Warranty</span><span class="spec-val">2 Years (+ 1 Year extendable)</span></div>
+          <div class="spec-row"><span class="spec-key">Certifications</span><span class="spec-val">ISI · BIS · RoHS</span></div>
+        </div>
+      </div>
+      <div class="stats-grid fade-up">
+        <div class="stat-card">
+          <div class="stat-num">4.8★</div>
+          <div class="stat-label">Average Indian customer rating</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">50k+</div>
+          <div class="stat-label">Happy Indian households</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">150+</div>
+          <div class="stat-label">Pre-loaded Chai recipes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">90s</div>
+          <div class="stat-label">Heat-up time from cold</div>
+        </div>
+        <div class="stat-card" style="grid-column:1/-1">
+          <div class="stat-num">2+1 yr</div>
+          <div class="stat-label">Warranty — India-wide service centres</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="reviews">
+  <div class="container">
+    <div class="fade-up">
+      <div class="tag">Customer Reviews</div>
+      <h2 class="section-title">Real Love from<br>Homes Across India</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">Within the first week it already figured out I like strong ginger-cardamom chai. This machine is no less than grandma!</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#FF9933">PS</div>
+          <div>
+            <div class="testi-name">Priya Sharma</div>
+            <div class="testi-role">Home Chai Expert · Jaipur, Rajasthan 🏰</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">I keep it at the office. Schedule it at 7 AM and chai is ready the moment I arrive. The app is super smooth and works in Hindi too.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#138808">RK</div>
+          <div>
+            <div class="testi-name">Rohit Kumar</div>
+            <div class="testi-role">Software Engineer · Bengaluru, Karnataka 🌆</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★☆</div>
+        <p class="testi-text">The Kashmiri Kahwa recipe came out completely authentic. The fragrance of saffron fills the whole house. No Cost EMI made buying it so easy.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#C0392B">AM</div>
+          <div>
+            <div class="testi-name">Aisha Mirza</div>
+            <div class="testi-role">Home Baker · Srinagar, J&K ❄️</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="fade-up" style="text-align:center;max-width:540px;margin:0 auto 50px">
+      <div class="tag">Pricing</div>
+      <h2 class="section-title">Simple, Transparent Pricing</h2>
+      <p class="section-sub" style="margin:12px auto 0">No hidden charges. No subscription. EMI available. Also on Flipkart and Amazon.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card fade-up">
+        <div>
+          <div class="price-tier">Basic</div>
+          <div class="price-amount"><sup>₹</sup>8,999</div>
+          <div class="price-emi">EMI: ₹750/month</div>
+          <p class="price-desc">Perfect for your everyday chai</p>
+        </div>
+        <div class="price-features">
+          <div class="price-feat"><div class="price-feat-check">✓</div> Manual brew control</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> Temperature selection</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> 30 pre-set recipes</div>
+          <div class="price-feat off"><div class="price-feat-check">✗</div> AI taste learning</div>
+          <div class="price-feat off"><div class="price-feat-check">✗</div> Auto masala dispenser</div>
+        </div>
+        <button class="btn-ghost" style="width:100%;justify-content:center" onclick="showToast('Basic added to Cart! 🛒')">Choose Basic</button>
+      </div>
+      <div class="price-card featured fade-up">
+        <div>
+          <div class="price-tier">Pro</div>
+          <div class="price-amount"><sup>₹</sup>12,999</div>
+          <div class="price-emi">EMI: ₹1,084/month — No Cost</div>
+          <p class="price-desc">The full ChaiMaster experience</p>
+        </div>
+        <div class="price-features">
+          <div class="price-feat"><div class="price-feat-check">✓</div> All Basic features</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> AI taste learning</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> Auto masala dispenser</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> 150+ chai recipes</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> Hindi Voice Assistant</div>
+        </div>
+        <button class="btn-primary" style="width:100%;justify-content:center" onclick="showToast('Pro added to Cart! 🎉')">Choose Pro</button>
+      </div>
+      <div class="price-card fade-up">
+        <div>
+          <div class="price-tier">Chai Utsav Kit</div>
+          <div class="price-amount"><sup>₹</sup>17,499</div>
+          <div class="price-emi">EMI: ₹1,459/month</div>
+          <p class="price-desc">Pro + complete chai experience kit</p>
+        </div>
+        <div class="price-features">
+          <div class="price-feat"><div class="price-feat-check">✓</div> All Pro features</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> Kulhad set (6 pieces)</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> Premium masala starter kit</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> 6-month tea leaf subscription</div>
+          <div class="price-feat"><div class="price-feat-check">✓</div> Doorstep service warranty</div>
+        </div>
+        <button class="btn-ghost" style="width:100%;justify-content:center" onclick="showToast('Utsav Kit added to Cart! 🪔')">Choose Utsav Kit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FESTIVE BANNER / CTA -->
+<section id="contact">
+  <div class="container">
+    <div class="festive-banner fade-up">
+      <div>
+        <h2 class="festive-title">🪔 20% Off This Diwali!</h2>
+        <p class="festive-sub">Register your email and get the <strong>Festive Offer</strong> + free kulhad set. Limited time only.</p>
+      </div>
+      <form class="notify-form" onsubmit="handleSubmit(event)">
+        <input class="notify-input" type="email" placeholder="your@email.com" required />
+        <button type="submit" class="btn-primary">Get the Offer →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-logo" style="font-size:1.3rem">ChaiMaster<span style="color:var(--saffron)">Pro</span></div>
+        <p>India's first AI-powered smart chai maker. Designed in India. Made for India. 🇮🇳</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <div class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#variants">Chai Types</a>
+          <a href="#specs">Specifications</a>
+          <a href="#pricing">Pricing</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-links">
+          <a href="#">About Us</a>
+          <a href="#">Blog</a>
+          <a href="#">Careers</a>
+          <a href="#">Press Kit</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <div class="footer-links">
+          <a href="#">Help Centre</a>
+          <a href="#">Warranty</a>
+          <a href="#">Service Centres</a>
+          <a href="#">Toll-Free: 1800-XXX-XXXX</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 ChaiMaster Pro. All rights reserved. GST No: 27XXXXX1234Z1</p>
+      <div class="flag-text">🇮🇳 Proudly Made in India — Startup India Registered</div>
+      <div class="social-links">
+        <a class="social-link" href="#" title="Instagram">IG</a>
+        <a class="social-link" href="#" title="YouTube">YT</a>
+        <a class="social-link" href="#" title="WhatsApp">WA</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast">
+  <span>☕</span>
+  <span id="toastMsg">Added to Cart!</span>
+</div>
 
 <script>
-// ---- ENVIRONMENT ----
+  /* Nav scroll */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
 
-const isMobile = window.innerWidth <= 480;
-const isTablet = window.innerWidth > 480 && window.innerWidth <= 900;
+  /* Mobile menu */
+  function openMobileMenu()  { document.getElementById('mobileMenu').classList.add('open'); }
+  function closeMobileMenu() { document.getElementById('mobileMenu').classList.remove('open'); }
 
-// Light rays
-const lrEl = document.getElementById('light-rays');
-for (let i = 0; i < 12; i++) {
-  const r = document.createElement('div');
-  r.className = 'ray';
-  r.style.cssText = `--rleft:${3+i*8}%; --rrot:${-18+i*4}deg; --rspeed:${3+Math.random()*4}s; --rdelay:${Math.random()*4}s;`;
-  lrEl.appendChild(r);
-}
-
-// Clouds — scale size on small screens
-const cloudScale = isMobile ? 0.55 : isTablet ? 0.78 : 1;
-[
-  { top:'7%',  left:'-8%',  w:200, h:58, dur:40, delay:0 },
-  { top:'12%', left:'18%',  w:260, h:68, dur:52, delay:-16 },
-  { top:'5%',  left:'52%',  w:170, h:50, dur:44, delay:-9 },
-  { top:'16%', left:'72%',  w:210, h:62, dur:48, delay:-24 },
-  { top:'9%',  left:'88%',  w:140, h:44, dur:36, delay:-6 },
-].forEach(c => {
-  const cw = Math.round(c.w * cloudScale);
-  const ch = Math.round(c.h * cloudScale);
-  const el = document.createElement('div');
-  el.className = 'cloud';
-  el.style.cssText = `top:${c.top};left:${c.left};width:${cw}px;height:${ch}px;--cdur:${c.dur}s;--cdelay:${c.delay}s;`;
-  el.innerHTML = `
-    <div style="position:absolute;width:${Math.round(cw*0.48)}px;height:${Math.round(ch*1.25)}px;background:rgba(255,255,255,0.88);border-radius:50%;top:-${Math.round(ch*0.28)}px;left:${Math.round(cw*0.22)}px"></div>
-    <div style="position:absolute;width:${Math.round(cw*0.32)}px;height:${Math.round(ch*1.05)}px;background:rgba(255,255,255,0.82);border-radius:50%;top:-${Math.round(ch*0.1)}px;left:${Math.round(cw*0.58)}px"></div>`;
-  document.getElementById('clouds').appendChild(el);
-});
-
-// Birds — fewer on mobile
-const birdCount = isMobile ? 3 : 6;
-for (let i = 0; i < birdCount; i++) {
-  const b = document.createElement('div');
-  b.className = 'bird';
-  const sc = (isMobile ? 0.4 : 0.55) + Math.random() * 0.75;
-  b.style.cssText = `--bdur:${11+Math.random()*13}s;--birddelay:${-Math.random()*13}s;--btop:${7+Math.random()*18}%;`;
-  b.innerHTML = `<svg width="${22*sc}" height="${11*sc}" viewBox="0 0 22 11" fill="none">
-    <path d="M0 6 Q5.5 0 11 6 Q16.5 0 22 6" stroke="#444" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  </svg>`;
-  document.getElementById('birds').appendChild(b);
-}
-
-// Butterflies — fewer on mobile
-const bufColors = ['#ff9ecd','#ffe566','#a8edea','#ffb347','#c3f0ca','#d4a0ff'];
-const bufCount = isMobile ? 3 : 6;
-bufColors.slice(0, bufCount).forEach((c) => {
-  const bf = document.createElement('div');
-  bf.className = 'butterfly';
-  bf.style.cssText = `left:${8+Math.random()*78}%;bottom:${18+Math.random()*42}%;--bufdur:${5+Math.random()*6}s;--bufdelay:${Math.random()*5}s;`;
-  bf.innerHTML = `<svg width="18" height="14" viewBox="0 0 18 14">
-    <ellipse cx="4"  cy="5"  rx="4" ry="3" fill="${c}" opacity="0.9"/>
-    <ellipse cx="14" cy="5"  rx="4" ry="3" fill="${c}" opacity="0.9"/>
-    <ellipse cx="5"  cy="10" rx="3" ry="2" fill="${c}" opacity="0.75"/>
-    <ellipse cx="13" cy="10" rx="3" ry="2" fill="${c}" opacity="0.75"/>
-    <line x1="9" y1="2" x2="9" y2="13" stroke="#555" stroke-width="0.9" stroke-linecap="round"/>
-    <line x1="7" y1="2" x2="9" y2="4" stroke="#555" stroke-width="0.7"/>
-    <line x1="11" y1="2" x2="9" y2="4" stroke="#555" stroke-width="0.7"/>
-  </svg>`;
-  document.getElementById('butterflies').appendChild(bf);
-});
-
-// Grass — scale count with screen
-const grassCount = isMobile ? 55 : isTablet ? 90 : 130;
-const grassWrap = document.getElementById('grass-wrap');
-const grassCols = ['#2e7a18','#3e9e22','#26601a','#50c030','#5acf38','#48b228','#34881e'];
-for (let i = 0; i < grassCount; i++) {
-  const bl = document.createElement('div');
-  bl.className = 'blade';
-  const h = 14 + Math.random() * (isMobile ? 28 : 52);
-  const w = 3 + Math.random() * 5;
-  const rot = -16 + Math.random()*32;
-  const col = grassCols[Math.floor(Math.random()*grassCols.length)];
-  const col2 = grassCols[Math.floor(Math.random()*grassCols.length)];
-  bl.style.cssText = `left:${Math.random()*100}%;--bh:${h}px;--bw:${w}px;--brot:${rot}deg;
-    --bspeed:${1.5+Math.random()*2.5}s;--bdelay:${Math.random()*3}s;
-    background:linear-gradient(to top,${col},${col2});`;
-  grassWrap.appendChild(bl);
-}
-
-// Wildflowers — scale count with screen
-const flowerCount = isMobile ? 14 : isTablet ? 22 : 32;
-const flowEl = document.getElementById('flowers');
-const flDefs = [
-  {color:'#ff5252',petal:'rgba(255,100,100,0.38)',stem:32},
-  {color:'#FFD700',petal:'rgba(255,215,60,0.38)',stem:26},
-  {color:'#e040fb',petal:'rgba(210,80,255,0.38)',stem:36},
-  {color:'#ff9800',petal:'rgba(255,170,50,0.38)',stem:24},
-  {color:'#fff9c4',petal:'rgba(255,240,110,0.38)',stem:30},
-  {color:'#f48fb1',petal:'rgba(255,150,180,0.38)',stem:28},
-  {color:'#80cbc4',petal:'rgba(100,220,200,0.38)',stem:34},
-  {color:'#ff7043',petal:'rgba(255,120,80,0.38)', stem:22},
-];
-for (let i = 0; i < flowerCount; i++) {
-  const d = flDefs[i % flDefs.length];
-  const f = document.createElement('div');
-  f.className = 'flower';
-  f.style.cssText = `--fbot:${14+Math.random()*55}px;--fleft:${Math.random()*100}%;
-    --fstem:${d.stem+Math.random()*14}px;--fcolor:${d.color};--fpetal:${d.petal};
-    --fspeed:${2+Math.random()*3}s;--fdelay:${Math.random()*3}s;`;
-  f.innerHTML = `<div class="flower-head"></div><div class="flower-stem"></div>`;
-  flowEl.appendChild(f);
-}
-
-// ---- TREE DRAWING ----
-
-const treeSVG = document.getElementById('tree-svg');
-const stageMessages = [
-  '🌰 A seed nestles into the warm earth',
-  '🌱 The seed stirs — life wakes up!',
-  '🌿 A tiny sprout pushes toward the light',
-  '🪴 The sapling stretches, finding its form',
-  '🌲 Young branches fork and reach out',
-  '🌳 The trunk thickens, the crown fills out',
-  '🌳 A wide canopy fans into the sky',
-  '🌳 A magnificent, wild tree stands proud',
-];
-
-let clicks = 0;
-const MAX = 7;
-let seed = Math.random() * 9999; // for pseudo-randomness per tree
-
-function seededRng(s) {
-  // simple seeded random for stable tree shapes
-  let st = s;
-  return function() {
-    st = (st * 9301 + 49297) % 233280;
-    return st / 233280;
-  };
-}
-
-function rnd(min, max, r) {
-  return min + (r ? r() : Math.random()) * (max - min);
-}
-
-// Recursive branch builder — returns SVG string
-function buildBranch(x1, y1, angle, length, depth, strokeW, r, leavesArr) {
-  if (depth <= 0 || length < 5) return '';
-  const rad = angle * Math.PI / 180;
-  const wobble = rnd(-length * 0.18, length * 0.18, r);
-  const x2 = x1 + Math.cos(rad) * length + wobble * 0.3;
-  const y2 = y1 - Math.sin(rad) * length;
-  const mx = (x1 + x2) / 2 + rnd(-length * 0.2, length * 0.2, r);
-  const my = (y1 + y2) / 2 + rnd(-length * 0.12, length * 0.12, r);
-
-  const trunkFrac = depth / 5;
-  const barkColor = trunkFrac > 0.7 ? '#5c3010' : trunkFrac > 0.4 ? '#7a4520' : '#9b6030';
-
-  let out = `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"
-    stroke="${barkColor}" stroke-width="${Math.max(0.8, strokeW).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-
-  if (depth === 1) {
-    // Scatter leaf ellipses at tips
-    const lcount = 4 + Math.floor(rnd(0, 5, r));
-    const leafPalette = ['#3a9222','#50b830','#68cc40','#2a7018','#82d850','#4eb030','#a0d860'];
-    for (let i = 0; i < lcount; i++) {
-      const lx = x2 + rnd(-20, 20, r);
-      const ly = y2 + rnd(-20, 12, r);
-      const rx = rnd(8, 18, r);
-      const ry = rnd(5, 13, r);
-      const lr = rnd(-50, 50, r);
-      const col = leafPalette[Math.floor(r() * leafPalette.length)];
-      const op = rnd(0.72, 0.95, r);
-      leavesArr.push({ lx, ly, rx, ry, lr, col, op });
-    }
-    return out;
-  }
-
-  const spread = rnd(22, 38, r);
-  const lf = rnd(0.60, 0.74, r);
-  out += buildBranch(x2, y2, angle + spread + rnd(-7, 7, r), length * lf, depth - 1, strokeW * 0.65, r, leavesArr);
-  out += buildBranch(x2, y2, angle - spread + rnd(-7, 7, r), length * lf, depth - 1, strokeW * 0.65, r, leavesArr);
-  if (depth >= 3 && r() > 0.42) {
-    out += buildBranch(x2, y2, angle + rnd(-10, 10, r), length * lf * 0.78, depth - 1, strokeW * 0.52, r, leavesArr);
-  }
-  return out;
-}
-
-function drawTree(stage) {
-  const r = seededRng(seed + stage * 137);
-  // Scale tree canvas to match rendered SVG size
-  const W = isMobile ? Math.round(window.innerWidth * 0.92) : isTablet ? Math.min(340, Math.round(window.innerWidth * 0.72)) : 380;
-  const H = isMobile ? Math.round(W * 0.56) : isTablet ? Math.round(W * 0.56) : 400;
-  const cx = W / 2 + rnd(-4, 4, r);
-  const base = H; // trunk base at very bottom of viewBox
-
-  // Update SVG viewBox to match
-  treeSVG.setAttribute('viewBox', `0 0 ${W} ${H}`);
-
-  let defs = `<defs>
-    <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="rgba(0,60,0,0.22)"/>
-    </filter>
-    <filter id="leafGlow">
-      <feGaussianBlur stdDeviation="2.5" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <radialGradient id="trunkGrad" cx="30%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#a06030"/>
-      <stop offset="100%" stop-color="#4a2810"/>
-    </radialGradient>
-  </defs>`;
-
-  let content = defs;
-
-  if (stage === 0) {
-    content += `<ellipse cx="${cx}" cy="${base-9}" rx="9" ry="11" fill="#b5651d" opacity="0">
-      <animate attributeName="opacity" from="0" to="1" dur="0.7s" fill="freeze"/></ellipse>
-      <ellipse cx="${cx-1}" cy="${base-13}" rx="3" ry="5" fill="#7a3e0e" opacity="0">
-      <animate attributeName="opacity" from="0" to="0.7" dur="0.7s" fill="freeze"/></ellipse>`;
-    treeSVG.innerHTML = content;
-    treeSVG.style.opacity = 1;
-    return;
-  }
-
-  const trunkHeights = [0, 20, 55, 100, 148, 185, 215, 235];
-  const trunkWidths  = [0,  6,  9,  13,  17,  21,  24,  26];
-  const trunkH = trunkHeights[stage];
-  const trunkW = trunkWidths[stage];
-  const trunkTop = base - trunkH;
-  const lean = rnd(-8, 8, r); // natural lean
-
-  // Root flares
-  if (stage >= 3) {
-    const rootN = Math.min(stage, 6);
-    for (let i = 0; i < rootN; i++) {
-      const side = i % 2 === 0 ? 1 : -1;
-      const rootX = cx + side * (10 + i * 7);
-      const bulge = rnd(8, 18, r);
-      content += `<path d="M${cx},${base} Q${rootX + bulge * side},${base - 25} ${rootX + rnd(-5,5,r)},${base + 4}"
-        stroke="url(#trunkGrad)" stroke-width="${Math.max(2, trunkW * 0.28).toFixed(1)}"
-        fill="none" stroke-linecap="round" opacity="0.75"/>`;
-    }
-  }
-
-  // Trunk — organic bezier with lean
-  const c1x = cx + rnd(-16, 16, r) + lean * 0.3;
-  const c1y = base - trunkH * 0.32;
-  const c2x = cx + lean + rnd(-12, 12, r);
-  const c2y = base - trunkH * 0.72;
-  const tipX = cx + lean;
-
-  content += `<path d="M${(cx - trunkW/2).toFixed(1)},${base}
-    C${(c1x - trunkW/2).toFixed(1)},${c1y.toFixed(1)} ${(c2x - trunkW/3).toFixed(1)},${c2y.toFixed(1)} ${(tipX - trunkW/4).toFixed(1)},${trunkTop.toFixed(1)}
-    L${(tipX + trunkW/4).toFixed(1)},${trunkTop.toFixed(1)}
-    C${(c2x + trunkW/3).toFixed(1)},${c2y.toFixed(1)} ${(c1x + trunkW/2).toFixed(1)},${c1y.toFixed(1)} ${(cx + trunkW/2).toFixed(1)},${base} Z"
-    fill="url(#trunkGrad)"/>`;
-
-  // Bark highlight
-  content += `<path d="M${(cx - trunkW*0.1).toFixed(1)},${base}
-    C${(c1x).toFixed(1)},${c1y.toFixed(1)} ${(c2x + trunkW*0.1).toFixed(1)},${c2y.toFixed(1)} ${tipX.toFixed(1)},${trunkTop.toFixed(1)}"
-    stroke="rgba(180,110,60,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
-
-  // Bark texture knots
-  const knotCount = Math.floor(rnd(2, 5, r));
-  for (let i = 0; i < knotCount; i++) {
-    const ky = base - trunkH * rnd(0.1, 0.85, r);
-    const kx = cx + rnd(-trunkW * 0.25, trunkW * 0.25, r);
-    content += `<ellipse cx="${kx.toFixed(1)}" cy="${ky.toFixed(1)}"
-      rx="${rnd(2,5,r).toFixed(1)}" ry="${rnd(1.5,3,r).toFixed(1)}"
-      fill="rgba(0,0,0,0.12)" transform="rotate(${rnd(-20,20,r).toFixed(1)},${kx.toFixed(1)},${ky.toFixed(1)})"/>`;
-  }
-
-  // Branches
-  const branchDepths = [0, 0, 1, 2, 3, 3, 4, 4];
-  const branchLens   = [0, 0, 22, 38, 55, 70, 82, 90];
-  const depth = branchDepths[stage];
-  const bLen  = branchLens[stage];
-
-  const leavesArr = [];
-
-  if (stage >= 2) {
-    const numBranches = Math.min(2 + stage, 7);
-    for (let i = 0; i < numBranches; i++) {
-      const branchFrac = 0.05 + i * (0.85 / numBranches);
-      const bStartY = base - trunkH * branchFrac;
-      const bStartX = cx + lean * branchFrac;
-      const side = i % 2 === 0 ? 1 : -1;
-      const ang = 90 + side * (18 + i * 9) + rnd(-6, 6, r);
-      const bScale = rnd(0.65, 1.05, r);
-      content += buildBranch(bStartX, bStartY, ang, bLen * bScale, depth, trunkW * 0.36, r, leavesArr);
-    }
-    // Top
-    content += buildBranch(tipX, trunkTop, 90 + rnd(-10, 10, r), bLen * rnd(0.85, 1.1, r), depth, trunkW * 0.4, r, leavesArr);
-  }
-
-  // Draw leaves (behind) — sort by y so lower leaves appear in front
-  leavesArr.sort((a, b) => a.ly - b.ly);
-  let leavesHTML = `<g filter="url(#leafGlow)">`;
-  leavesArr.forEach(({ lx, ly, rx, ry, lr, col, op }) => {
-    leavesHTML += `<ellipse cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"
-      transform="rotate(${lr.toFixed(1)},${lx.toFixed(1)},${ly.toFixed(1)})"
-      fill="${col}" opacity="${op.toFixed(2)}"/>`;
-    // Vein
-    leavesHTML += `<line x1="${lx.toFixed(1)}" y1="${(ly-ry*0.7).toFixed(1)}" x2="${lx.toFixed(1)}" y2="${(ly+ry*0.7).toFixed(1)}"
-      stroke="rgba(0,80,0,0.12)" stroke-width="0.7" transform="rotate(${lr.toFixed(1)},${lx.toFixed(1)},${ly.toFixed(1)})"/>`;
+  /* Marquee content */
+  const awards = [
+    'Make in India 🇮🇳','Startup India Recognized','NASSCOM Product Award',
+    'Times of India — Best Kitchen Tech 2025','ISI & BIS Certified',
+    'Shark Tank India Featured','Flipkart Preferred Seller','Amazon Choice',
+    'Economic Times Startup of the Year','The Hindu — Top 10 Smart Appliances',
+  ];
+  const track = document.getElementById('marqueeTrack');
+  [...awards, ...awards].forEach(a => {
+    const el = document.createElement('div');
+    el.className = 'marquee-item';
+    el.textContent = a;
+    track.appendChild(el);
   });
-  leavesHTML += `</g>`;
-  content += leavesHTML;
 
-  // Acorns / fruit on mature trees
-  if (stage >= 6) {
-    const fruitCols = ['#e83030','#e06010','#cc2020','#d04020'];
-    const fruitCount = 5 + Math.floor(r() * 7);
-    for (let i = 0; i < fruitCount; i++) {
-      const fx = tipX + rnd(-90, 90, r);
-      const fy = trunkTop + rnd(-50, 50, r);
-      const fr = rnd(4, 7.5, r);
-      const fc = fruitCols[Math.floor(r() * fruitCols.length)];
-      content += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${fr.toFixed(1)}" fill="${fc}" opacity="${rnd(0.75,0.95,r).toFixed(2)}"/>`;
-      content += `<line x1="${fx.toFixed(1)}" y1="${(fy-fr).toFixed(1)}" x2="${(fx+rnd(-3,3,r)).toFixed(1)}" y2="${(fy-fr-5).toFixed(1)}" stroke="#4a2810" stroke-width="1.2" stroke-linecap="round"/>`;
-    }
+  /* How it works steps */
+  const stepData = [
+    { emoji:'⚙️', label:'Tell Us Your Preference',  sub:'Set up your profile in the app' },
+    { emoji:'🧠', label:'AI Calibrates', sub:'Smart brew parameters are configured' },
+    { emoji:'☕', label:'Perfect Chai is Ready', sub:'Piping hot in 90 seconds' },
+    { emoji:'⭐', label:'Rate It — Improve It', sub:'The machine learns from every brew' },
+  ];
+  let currentStep = 0;
+  function setStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i === n));
+    document.getElementById('howEmoji').textContent = stepData[n].emoji;
+    document.getElementById('howLabel').textContent = stepData[n].label;
+    document.getElementById('howSub').textContent   = stepData[n].sub;
+  }
+  setInterval(() => setStep((currentStep + 1) % 4), 3200);
+
+  /* Variant selector */
+  function selectVariant(el) {
+    document.querySelectorAll('.variant-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
   }
 
-  treeSVG.innerHTML = content;
-  treeSVG.style.opacity = 1;
-}
-
-// ---- INTERACTION ----
-
-const stageLabel    = document.getElementById('stage-label');
-const clickCounter  = document.getElementById('click-counter');
-const growBtn       = document.getElementById('growBtn');
-const reseedBtn     = document.getElementById('reseedBtn');
-const completionMsg = document.getElementById('completion-msg');
-
-function spawnParticles(fromEl, colors, count = 20) {
-  const rect = fromEl.getBoundingClientRect();
-  const bx = rect.left + rect.width / 2;
-  const by = rect.top + rect.height / 2;
-  for (let i = 0; i < count; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const sz = 6 + Math.random() * 12;
-    const ang = Math.random() * 360;
-    const dist = 50 + Math.random() * 110;
-    const tx = Math.cos(ang * Math.PI / 180) * dist;
-    const ty = Math.sin(ang * Math.PI / 180) * dist - 70;
-    p.style.cssText = `left:${bx}px;top:${by}px;width:${sz}px;height:${sz}px;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      --ptx:${tx}px;--pty:${ty}px;--ptr:${Math.random()*360}deg;
-      --pdur:${0.7+Math.random()*0.7}s;`;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 1500);
+  /* Toast */
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
   }
-}
 
-function growTree() {
-  if (clicks >= MAX) return;
-  clicks++;
-
-  spawnParticles(growBtn, ['#5cb82e','#8ce050','#2d7a1c','#b0e870','#FFD700','#68cc40'], 22);
-
-  stageLabel.textContent = stageMessages[clicks];
-  clickCounter.textContent = clicks < MAX ? `Stage ${clicks} of ${MAX}` : '';
-  drawTree(clicks);
-
-  if (clicks >= MAX) {
-    growBtn.classList.add('done');
-    growBtn.textContent = '🌳 Fully Grown!';
-    setTimeout(() => {
-      completionMsg.classList.add('show');
-      reseedBtn.classList.add('show');
-    }, 900);
-    stageLabel.textContent = '🌳 A magnificent, wild tree stands proud';
+  /* Email form */
+  function handleSubmit(e) {
+    e.preventDefault();
+    e.target.reset();
+    showToast('Great! You will receive the offer 🎉');
   }
-}
 
-function reseed() {
-  // Leaf explosion from tree
-  spawnParticles(treeSVG, ['#5cb82e','#8ce050','#FFD700','#ff5252','#a0d860','#c8f040'], 30);
-
-  treeSVG.style.transition = 'opacity 0.75s ease, transform 0.75s ease';
-  treeSVG.style.opacity = '0';
-  treeSVG.style.transform = 'scaleY(0.02) scaleX(0.08)';
-  treeSVG.style.transformOrigin = 'bottom center';
-
-  reseedBtn.classList.remove('show');
-  completionMsg.classList.remove('show');
-
-  setTimeout(() => {
-    clicks = 0;
-    seed = Math.random() * 9999;  // new tree shape each time
-    treeSVG.innerHTML = '';
-    treeSVG.style.transition = '';
-    treeSVG.style.transform = '';
-    treeSVG.style.opacity = '0';
-
-    growBtn.classList.remove('done');
-    growBtn.textContent = '🌿 Plant & Grow';
-    stageLabel.textContent = '🌰 Click to plant your first seed';
-    clickCounter.textContent = '';
-  }, 850);
-}
+  /* Scroll fade-in */
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 90);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 </script>
 </body>
 </html>
