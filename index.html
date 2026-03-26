@@ -7,15 +7,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --sky1: #87CEEB;
-  --sky2: #c9e8f5;
-  --sun: #FFD700;
-  --grass-dark: #2d6a1e;
-  --grass-mid: #4a9e2f;
-  --grass-light: #6abf42;
-  --earth: #7a4f2e;
-  --earth-dark: #5a3520;
-  --soil-top: #a0652a;
+  --ground-pct: 11%;   /* % from bottom where soil surface sits */
+  --tree-w: min(380px, 90vw);
+  --tree-h: min(400px, 55vw);
+  --btn-pad-v: 16px;
+  --btn-pad-h: 46px;
+  --btn-font: 1rem;
+  --label-font: 0.95rem;
+  --sun-size: 76px;
+}
+
+/* ── Compact phones ── */
+@media (max-width: 480px) {
+  :root {
+    --tree-w: 92vw;
+    --tree-h: 52vw;
+    --btn-pad-v: 14px;
+    --btn-pad-h: 28px;
+    --btn-font: 0.88rem;
+    --label-font: 0.78rem;
+    --sun-size: 48px;
+    --ground-pct: 10%;
+  }
+}
+
+/* ── Tablets portrait ── */
+@media (min-width: 481px) and (max-width: 900px) {
+  :root {
+    --tree-w: min(340px, 72vw);
+    --tree-h: min(360px, 50vw);
+    --btn-pad-v: 15px;
+    --btn-pad-h: 38px;
+    --btn-font: 0.95rem;
+    --label-font: 0.88rem;
+    --sun-size: 60px;
+  }
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -24,25 +50,23 @@ body {
   overflow: hidden;
   width: 100vw; height: 100vh;
   font-family: 'Nunito', sans-serif;
+  /* Prevent double-tap zoom & text selection on mobile */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 #sky {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: linear-gradient(180deg,
-    #3b8fc4 0%,
-    #62b8e8 25%,
-    #a8d8f0 50%,
-    #c8e8a0 75%,
-    #b0d860 100%
-  );
+    #3b8fc4 0%, #62b8e8 25%, #a8d8f0 50%, #c8e8a0 75%, #b0d860 100%);
   z-index: 0;
 }
 
 #sun {
   position: absolute;
   top: 8%; left: 13%;
-  width: 76px; height: 76px;
+  width: var(--sun-size); height: var(--sun-size);
   background: radial-gradient(circle, #fffde0 0%, #ffe040 35%, rgba(255,200,0,0) 70%);
   border-radius: 50%;
   box-shadow: 0 0 50px 25px rgba(255,220,50,0.4), 0 0 110px 60px rgba(255,180,0,0.18);
@@ -57,10 +81,10 @@ body {
 #sun-rays {
   position: absolute;
   top: 8%; left: 13%;
-  width: 76px; height: 76px;
+  width: var(--sun-size); height: var(--sun-size);
   z-index: 2;
   animation: raysRotate 22s linear infinite;
-  transform-origin: 38px 38px;
+  transform-origin: center center;
   pointer-events: none;
 }
 @keyframes raysRotate { to { transform: rotate(360deg); } }
@@ -94,10 +118,8 @@ body {
   pointer-events: none;
 }
 .blade {
-  position: absolute;
-  bottom: 0;
-  width: var(--bw,5px);
-  height: var(--bh,38px);
+  position: absolute; bottom: 0;
+  width: var(--bw,5px); height: var(--bh,38px);
   border-radius: 50% 50% 0 0 / 80% 80% 0 0;
   transform-origin: bottom center;
   transform: rotate(var(--brot,0deg));
@@ -111,10 +133,8 @@ body {
 
 .flower {
   position: absolute;
-  bottom: var(--fbot,30px);
-  left: var(--fleft,50%);
-  z-index: 9;
-  pointer-events: none;
+  bottom: var(--fbot,30px); left: var(--fleft,50%);
+  z-index: 9; pointer-events: none;
   transform-origin: bottom center;
   animation: flowerSway var(--fspeed,3s) ease-in-out infinite alternate;
   animation-delay: var(--fdelay,0s);
@@ -127,9 +147,7 @@ body {
 .flower-head {
   width:10px; height:10px; border-radius:50%;
   background:var(--fcolor,#ff6b6b);
-  margin:0 auto;
-  box-shadow: 0 0 5px rgba(0,0,0,0.12);
-  position:relative;
+  margin:0 auto; box-shadow: 0 0 5px rgba(0,0,0,0.12); position:relative;
 }
 .flower-head::before {
   content:''; position:absolute; inset:-4px; border-radius:50%;
@@ -137,8 +155,7 @@ body {
 }
 
 .bird {
-  position: absolute;
-  z-index: 5;
+  position: absolute; z-index: 5;
   animation: birdFly var(--bdur,12s) linear infinite;
   animation-delay: var(--birddelay,0s);
   top: var(--btop,15%);
@@ -156,9 +173,7 @@ body {
 }
 
 .butterfly {
-  position: absolute;
-  z-index: 10;
-  pointer-events: none;
+  position: absolute; z-index: 10; pointer-events: none;
   animation: buffloat var(--bufdur,8s) ease-in-out infinite;
   animation-delay: var(--bufdelay,0s);
 }
@@ -170,7 +185,6 @@ body {
   100%{ transform: translate(0,0) rotate(-6deg); }
 }
 
-/* Light rays */
 #light-rays {
   position: absolute; inset: 0;
   pointer-events: none; z-index: 1; overflow: hidden;
@@ -189,94 +203,109 @@ body {
   to   { opacity:1;   width:10px; }
 }
 
-/* Tree scene */
+/* ── Tree scene ── */
 #tree-scene {
   position: absolute;
-  /* Landscape SVG is 55% tall, soil surface is at y=400/500 = 80% down that SVG.
-     So soil = 55% * 0.2 = 11% from bottom. Tree SVG viewBox base is at H-8=392/400 = 98%.
-     We position bottom at soil level so the trunk base meets the ground. */
-  bottom: 11%;
+  bottom: var(--ground-pct);
   left: 50%;
   transform: translateX(-50%);
   z-index: 15;
-  width: 400px;
+  width: var(--tree-w);
   display: flex;
   justify-content: center;
   align-items: flex-end;
 }
 #tree-svg {
-  width: 380px; height: 400px;
+  width: var(--tree-w);
+  height: var(--tree-h);
   overflow: visible;
   display: block;
-  /* Push SVG down so its bottom edge (where trunk base is) aligns with container bottom */
-  margin-bottom: -8px;
 }
 
-/* UI */
+/* ── UI labels & buttons ── */
 #stage-label {
-  position: fixed; top:16px; left:50%; transform:translateX(-50%);
+  position: fixed; top: 14px; left: 50%;
+  transform: translateX(-50%);
   font-family: 'Dela Gothic One', sans-serif;
-  font-size: 0.95rem; color: #2a4a10;
-  background: rgba(255,255,255,0.6);
+  font-size: var(--label-font); color: #2a4a10;
+  background: rgba(255,255,255,0.65);
   backdrop-filter: blur(8px);
-  padding: 8px 24px; border-radius: 40px;
+  padding: 8px 20px; border-radius: 40px;
   box-shadow: 0 2px 14px rgba(0,0,0,0.1);
-  z-index: 50; white-space: nowrap;
+  z-index: 50;
+  /* wrap gracefully on small screens */
+  white-space: normal;
+  text-align: center;
+  max-width: 88vw;
   transition: all 0.5s ease;
 }
+
 #click-counter {
-  position: fixed; top:58px; left:50%; transform:translateX(-50%);
-  font-size: 0.72rem; color:rgba(40,70,10,0.5);
-  letter-spacing:0.18em; text-transform:uppercase; z-index:50;
+  position: fixed; top: 56px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem; color: rgba(40,70,10,0.5);
+  letter-spacing: 0.18em; text-transform: uppercase; z-index: 50;
 }
+
+/* ── Grow button ── */
 .grow-btn {
-  position: fixed; bottom:42px; left:50%; transform:translateX(-50%);
-  z-index:50;
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom, 20px) + 16px);
+  left: 50%; transform: translateX(-50%);
+  z-index: 50;
   background: linear-gradient(145deg,#5cb82e,#3a8018);
-  border: none; color:#f0ffe0;
-  font-family:'Dela Gothic One',sans-serif;
-  font-size:1rem; letter-spacing:0.07em;
-  padding:16px 46px; cursor:pointer; border-radius:50px;
+  border: none; color: #f0ffe0;
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: var(--btn-font); letter-spacing: 0.07em;
+  padding: var(--btn-pad-v) var(--btn-pad-h);
+  cursor: pointer; border-radius: 50px;
+  min-height: 52px; /* touch target */
   box-shadow: 0 6px 22px rgba(50,120,16,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
   transition: all 0.25s ease;
+  white-space: nowrap;
 }
 .grow-btn:hover {
   background: linear-gradient(145deg,#6ecf38,#499e20);
   box-shadow: 0 10px 30px rgba(50,120,16,0.55);
   transform: translateX(-50%) translateY(-3px);
 }
-.grow-btn:active { transform: translateX(-50%) scale(0.96); }
+.grow-btn:active { transform: translateX(-50%) scale(0.95); }
 .grow-btn.done {
   background: linear-gradient(145deg,#b5d98a,#8cbf5a);
-  color:rgba(40,70,10,0.45); pointer-events:none;
+  color: rgba(40,70,10,0.45); pointer-events: none;
 }
 
+/* ── Reseed button ── */
 .reseed-btn {
-  position: fixed; bottom:42px; left:50%;
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom, 20px) + 16px);
+  left: 50%;
   transform: translateX(-50%) translateY(8px);
-  z-index:50;
+  z-index: 50;
   background: linear-gradient(145deg,#e0853a,#b05e1e);
-  border:none; color:#fff8ee;
-  font-family:'Dela Gothic One',sans-serif;
-  font-size:0.85rem; letter-spacing:0.07em;
-  padding:13px 34px; cursor:pointer; border-radius:50px;
+  border: none; color: #fff8ee;
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: calc(var(--btn-font) * 0.88); letter-spacing: 0.07em;
+  padding: calc(var(--btn-pad-v) * 0.88) calc(var(--btn-pad-h) * 0.78);
+  cursor: pointer; border-radius: 50px;
+  min-height: 48px;
   box-shadow: 0 6px 18px rgba(170,80,20,0.4);
-  opacity:0; pointer-events:none;
+  opacity: 0; pointer-events: none;
   transition: all 0.55s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
 }
 .reseed-btn.show {
-  opacity:1; pointer-events:all;
+  opacity: 1; pointer-events: all;
   transform: translateX(-50%) translateY(0);
-  bottom: 110px;
+  bottom: calc(max(20px, env(safe-area-inset-bottom, 20px) + 16px) + 68px);
 }
 .reseed-btn:hover {
   background: linear-gradient(145deg,#f0943f,#c06c22);
   transform: translateX(-50%) translateY(-2px);
-  bottom: 110px;
 }
 
 .particle {
-  position: fixed; pointer-events:none;
+  position: fixed; pointer-events: none;
   border-radius: 50% 0 50% 0;
   animation: poof var(--pdur,1s) ease-out forwards;
   z-index: 60;
@@ -287,15 +316,17 @@ body {
 }
 
 #completion-msg {
-  position: fixed; top:-70px; left:50%; transform:translateX(-50%);
-  font-family:'Dela Gothic One',sans-serif; font-size:1.05rem; color:#fff;
+  position: fixed; top: -70px; left: 50%; transform: translateX(-50%);
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: clamp(0.82rem, 2.5vw, 1.05rem); color: #fff;
   background: linear-gradient(135deg,#5cb82e,#3a8018);
-  padding:12px 28px; border-radius:50px;
+  padding: 12px 24px; border-radius: 50px;
   box-shadow: 0 8px 22px rgba(50,120,16,0.45);
-  z-index:55; white-space:nowrap;
+  z-index: 55;
+  max-width: 90vw; text-align: center;
   transition: top 0.7s cubic-bezier(0.34,1.56,0.64,1);
 }
-#completion-msg.show { top:96px; }
+#completion-msg.show { top: 86px; }
 </style>
 </head>
 <body>
@@ -355,6 +386,9 @@ body {
 <script>
 // ---- ENVIRONMENT ----
 
+const isMobile = window.innerWidth <= 480;
+const isTablet = window.innerWidth > 480 && window.innerWidth <= 900;
+
 // Light rays
 const lrEl = document.getElementById('light-rays');
 for (let i = 0; i < 12; i++) {
@@ -364,7 +398,8 @@ for (let i = 0; i < 12; i++) {
   lrEl.appendChild(r);
 }
 
-// Clouds
+// Clouds — scale size on small screens
+const cloudScale = isMobile ? 0.55 : isTablet ? 0.78 : 1;
 [
   { top:'7%',  left:'-8%',  w:200, h:58, dur:40, delay:0 },
   { top:'12%', left:'18%',  w:260, h:68, dur:52, delay:-16 },
@@ -372,20 +407,23 @@ for (let i = 0; i < 12; i++) {
   { top:'16%', left:'72%',  w:210, h:62, dur:48, delay:-24 },
   { top:'9%',  left:'88%',  w:140, h:44, dur:36, delay:-6 },
 ].forEach(c => {
+  const cw = Math.round(c.w * cloudScale);
+  const ch = Math.round(c.h * cloudScale);
   const el = document.createElement('div');
   el.className = 'cloud';
-  el.style.cssText = `top:${c.top};left:${c.left};width:${c.w}px;height:${c.h}px;--cdur:${c.dur}s;--cdelay:${c.delay}s;`;
+  el.style.cssText = `top:${c.top};left:${c.left};width:${cw}px;height:${ch}px;--cdur:${c.dur}s;--cdelay:${c.delay}s;`;
   el.innerHTML = `
-    <div style="position:absolute;width:${c.w*0.48}px;height:${c.h*1.25}px;background:rgba(255,255,255,0.88);border-radius:50%;top:-${c.h*0.28}px;left:${c.w*0.22}px"></div>
-    <div style="position:absolute;width:${c.w*0.32}px;height:${c.h*1.05}px;background:rgba(255,255,255,0.82);border-radius:50%;top:-${c.h*0.1}px;left:${c.w*0.58}px"></div>`;
+    <div style="position:absolute;width:${Math.round(cw*0.48)}px;height:${Math.round(ch*1.25)}px;background:rgba(255,255,255,0.88);border-radius:50%;top:-${Math.round(ch*0.28)}px;left:${Math.round(cw*0.22)}px"></div>
+    <div style="position:absolute;width:${Math.round(cw*0.32)}px;height:${Math.round(ch*1.05)}px;background:rgba(255,255,255,0.82);border-radius:50%;top:-${Math.round(ch*0.1)}px;left:${Math.round(cw*0.58)}px"></div>`;
   document.getElementById('clouds').appendChild(el);
 });
 
-// Birds
-for (let i = 0; i < 6; i++) {
+// Birds — fewer on mobile
+const birdCount = isMobile ? 3 : 6;
+for (let i = 0; i < birdCount; i++) {
   const b = document.createElement('div');
   b.className = 'bird';
-  const sc = 0.55 + Math.random()*0.75;
+  const sc = (isMobile ? 0.4 : 0.55) + Math.random() * 0.75;
   b.style.cssText = `--bdur:${11+Math.random()*13}s;--birddelay:${-Math.random()*13}s;--btop:${7+Math.random()*18}%;`;
   b.innerHTML = `<svg width="${22*sc}" height="${11*sc}" viewBox="0 0 22 11" fill="none">
     <path d="M0 6 Q5.5 0 11 6 Q16.5 0 22 6" stroke="#444" stroke-width="1.8" fill="none" stroke-linecap="round"/>
@@ -393,8 +431,10 @@ for (let i = 0; i < 6; i++) {
   document.getElementById('birds').appendChild(b);
 }
 
-// Butterflies
-['#ff9ecd','#ffe566','#a8edea','#ffb347','#c3f0ca','#d4a0ff'].forEach((c,i) => {
+// Butterflies — fewer on mobile
+const bufColors = ['#ff9ecd','#ffe566','#a8edea','#ffb347','#c3f0ca','#d4a0ff'];
+const bufCount = isMobile ? 3 : 6;
+bufColors.slice(0, bufCount).forEach((c) => {
   const bf = document.createElement('div');
   bf.className = 'butterfly';
   bf.style.cssText = `left:${8+Math.random()*78}%;bottom:${18+Math.random()*42}%;--bufdur:${5+Math.random()*6}s;--bufdelay:${Math.random()*5}s;`;
@@ -410,14 +450,15 @@ for (let i = 0; i < 6; i++) {
   document.getElementById('butterflies').appendChild(bf);
 });
 
-// Grass
+// Grass — scale count with screen
+const grassCount = isMobile ? 55 : isTablet ? 90 : 130;
 const grassWrap = document.getElementById('grass-wrap');
 const grassCols = ['#2e7a18','#3e9e22','#26601a','#50c030','#5acf38','#48b228','#34881e'];
-for (let i = 0; i < 130; i++) {
+for (let i = 0; i < grassCount; i++) {
   const bl = document.createElement('div');
   bl.className = 'blade';
-  const h = 18 + Math.random()*52;
-  const w = 3 + Math.random()*5;
+  const h = 14 + Math.random() * (isMobile ? 28 : 52);
+  const w = 3 + Math.random() * 5;
   const rot = -16 + Math.random()*32;
   const col = grassCols[Math.floor(Math.random()*grassCols.length)];
   const col2 = grassCols[Math.floor(Math.random()*grassCols.length)];
@@ -427,7 +468,8 @@ for (let i = 0; i < 130; i++) {
   grassWrap.appendChild(bl);
 }
 
-// Wildflowers
+// Wildflowers — scale count with screen
+const flowerCount = isMobile ? 14 : isTablet ? 22 : 32;
 const flowEl = document.getElementById('flowers');
 const flDefs = [
   {color:'#ff5252',petal:'rgba(255,100,100,0.38)',stem:32},
@@ -439,7 +481,7 @@ const flDefs = [
   {color:'#80cbc4',petal:'rgba(100,220,200,0.38)',stem:34},
   {color:'#ff7043',petal:'rgba(255,120,80,0.38)', stem:22},
 ];
-for (let i = 0; i < 32; i++) {
+for (let i = 0; i < flowerCount; i++) {
   const d = flDefs[i % flDefs.length];
   const f = document.createElement('div');
   f.className = 'flower';
@@ -526,9 +568,14 @@ function buildBranch(x1, y1, angle, length, depth, strokeW, r, leavesArr) {
 
 function drawTree(stage) {
   const r = seededRng(seed + stage * 137);
-  const W = 380, H = 400;
+  // Scale tree canvas to match rendered SVG size
+  const W = isMobile ? Math.round(window.innerWidth * 0.92) : isTablet ? Math.min(340, Math.round(window.innerWidth * 0.72)) : 380;
+  const H = isMobile ? Math.round(W * 0.56) : isTablet ? Math.round(W * 0.56) : 400;
   const cx = W / 2 + rnd(-4, 4, r);
   const base = H; // trunk base at very bottom of viewBox
+
+  // Update SVG viewBox to match
+  treeSVG.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
   let defs = `<defs>
     <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
