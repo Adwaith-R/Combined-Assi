@@ -495,7 +495,7 @@ function handleLogin(e) {
       if (email === storedUser.email && pass === storedUser.password) {
         showToast('Login successful! ☕');
         setTimeout(() => {
-          window.location.href = 'index.html';
+          window.location.href = 'main.html';
         }, 1200);
       } else {
         showToast('Invalid email or password ❌');
